@@ -197,6 +197,15 @@ m.getPurchaseDisplayInfo=function(){try{const r=orig.apply(this,arguments);if(r&
 decoPatches.push(function(){m.getPurchaseDisplayInfo=orig})
 }
 }catch(e){}
+// EntitlementStore: isEntitledToSku always true
+try{
+const s=findByStoreName("EntitlementStore")
+if(s&&typeof s.isEntitledToSku=="function"){
+const orig=s.isEntitledToSku
+s.isEntitledToSku=function(){return true}
+decoPatches.push(function(){s.isEntitledToSku=orig})
+}
+}catch(e){}
 }
 return{
 onLoad:function(){
