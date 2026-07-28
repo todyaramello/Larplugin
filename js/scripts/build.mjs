@@ -33,7 +33,7 @@ let code = await readFile(join(outDir, 'raw.js'), 'utf-8')
 
 code = code.replace(/^"use strict";\s*/, '')
 
-code = `(function(d,vendetta){"use strict";${code}d.default={onLoad:onLoad,onUnload:onUnload,settings:settings};Object.defineProperty(d,"__esModule",{value:!0});return d})({},vendetta)`
+code = `(function(d,vendetta){"use strict";${code}d.default={onLoad:onLoad,onUnload:onUnload,Settings:settings};Object.defineProperty(d,"__esModule",{value:!0});return d})({},vendetta)`
 
 await writeFile(join(outDir, 'raw.js'), code)
 
