@@ -37,9 +37,9 @@ let patches=[]
 const COLORS=["#FF0000","#FF6600","#FFAA00","#FFFF00","#88FF00","#00FF44","#00FFAA","#00FFFF","#0088FF","#0044FF","#0000FF","#6600FF","#AA00FF","#FF00FF","#FF0088","#FF5555","#55FF55","#5555FF","#FFFFFF","#AAAAAA","#555555","#000000"]
 function ColorRow({val,set,storeKey}){
 const kids=[]
-for(const c of COLORS){
-kids.push(h(View,{key:c,style:{width:30,height:30,margin:3,borderRadius:15,backgroundColor:c,borderWidth:2,borderColor:val===c?"#fff":"rgba(255,255,255,0.15)"},onTouchEnd:function(ev){try{ev&&ev.stopPropagation&&ev.stopPropagation()}catch(ex){};set(c);s[storeKey]=c;refreshUser();setTimeout(refreshProfile,100)}}))
-}
+COLORS.forEach(function(c){
+kids.push(h(View,{key:c,style:{width:30,height:30,margin:3,borderRadius:15,backgroundColor:c,borderWidth:2,borderColor:val===c?"#fff":"rgba(255,255,255,0.15)"},onTouchEnd:function(){set(c);s[storeKey]=c;refreshUser();setTimeout(refreshProfile,100)},onResponderGrant:function(){set(c);s[storeKey]=c;refreshUser();setTimeout(refreshProfile,100)},onStartShouldSetResponder:function(){return true}}))
+})
 return h(View,{style:{flexDirection:"row",flexWrap:"wrap",paddingHorizontal:12,paddingBottom:8}},...kids)
 }
 const BADGE_LIST=[{key:"staff",label:"Discord Staff"},{key:"partner",label:"Partnered Server Owner"},{key:"hypesquad_events",label:"HypeSquad Events"},{key:"bughunter_1",label:"Bug Hunter Level 1"},{key:"bughunter_2",label:"Bug Hunter Level 2"},{key:"hypesquad_bravery",label:"HypeSquad Bravery"},{key:"hypesquad_brilliance",label:"HypeSquad Brilliance"},{key:"hypesquad_balance",label:"HypeSquad Balance"},{key:"early_supporter",label:"Early Supporter"},{key:"verified_developer",label:"Early Verified Bot Developer"},{key:"certified_moderator",label:"Discord Certified Moderator"},{key:"active_developer",label:"Active Developer"},{key:"nitro",label:"Nitro"},{key:"nitro_1y",label:"Nitro 1 Year"},{key:"booster",label:"Server Booster"}]
