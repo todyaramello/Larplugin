@@ -193,6 +193,19 @@ return r
 decoPatches.push(function(){m.parseAvatarDecorationData=orig})
 }
 }catch(e){}
+// getPurchaseDisplayInfo: wrap to add isPurchased=true
+try{
+const m=findByProps("getPurchaseDisplayInfo","getAvatarDecorationPreviewUrl")
+if(m&&typeof m.getPurchaseDisplayInfo=="function"){
+const orig=m.getPurchaseDisplayInfo
+m.getPurchaseDisplayInfo=function(){
+const r=orig.apply(this,arguments)
+if(r&&typeof r=="object"&&!r.isPurchased){r.isPurchased=true;r.owned=true;r.isSubscription=false}
+return r
+}
+decoPatches.push(function(){m.getPurchaseDisplayInfo=orig})
+}
+}catch(e){}
 }
 return{
 onLoad:function(){
