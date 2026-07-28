@@ -10,7 +10,7 @@ const findByStoreName=vendetta.metro.findByStoreName.bind(vendetta.metro)
 const BADGE_MAP={staff:["staff","Discord Staff","5e74e9b61934fc1f67c65515d1f7e60d",1],partner:["partner","Partnered Server Owner","3f9748e53446a137a052f3454e2de41e",2],hypesquad_events:["hypesquad_events","HypeSquad Events","bf01d1073931f921909045f3a39fd264",4],bughunter_1:["bughunter_1","Bug Hunter Level 1","2717692c7dca7289b35297368a940dd0",8],bughunter_2:["bughunter_2","Bug Hunter Level 2","848f79194d4be5ff5f81505cbd0ce1e6",16384],hypesquad_bravery:["hypesquad_bravery","HypeSquad Bravery","8a88d63823d8a71cd5e390baa45efa02",64],hypesquad_brilliance:["hypesquad_brilliance","HypeSquad Brilliance","011940fd013da3f7fb926e4a1cd2e618",128],hypesquad_balance:["hypesquad_balance","HypeSquad Balance","3aa41de486fa12454c3761e8e223442e",256],early_supporter:["early_supporter","Early Supporter","7060786766c9c840eb3019e725d2b358",512],verified_developer:["verified_developer","Early Verified Bot Developer","6df5892e0f35b051f8b61eace34f4967",131072],certified_moderator:["certified_moderator","Moderator Programs Alumni","fee1624003e2fee35cb398e125dc479b",262144],active_developer:["active_developer","Active Developer","6bdc42827a38498929a4920da12695d9",4194304],nitro:["premium","Nitro","2ba85e8026a8614b640c2837bcdfe21b",0],nitro_1y:["premium_tenure_12_month","Nitro 1 Year","3393b2ca6e25e40d4bb3bd23d60d0cdd",0],booster:["guild_booster_lvl1","Server Booster","51040c70d4f20a921ad6674ff86fc95c",0]}
 function calculateFlags(){let flags=0;for(const[k,[id,desc,icon,f]]of Object.entries(BADGE_MAP)){if(s.badges?.[k]&&f>0)flags|=f}return flags}
 function getFakeBadges(){const r=[];for(const[k,[id,desc,icon]]of Object.entries(BADGE_MAP)){if(s.badges?.[k])r.push({id,description:desc,icon})}return r}
-function applyFakes(user){if(!user||!s.enabled)return user;if(s.username)user.username=s.username;if(s.displayName)user.globalName=s.displayName;if(s.email)user.email=s.email;if(s.phone)user.phone=s.phone;if(s.bio)user.bio=s.bio;if(s.joinYear){const d=new Date(parseInt(s.joinYear),Math.floor(Math.random()*12),Math.floor(Math.random()*28)+1).getTime();user.createdAt=d;user.timestamp=d};if(s.accent){const n=parseInt(s.accent.replace("#",""),16);if(!isNaN(n))user.accentColor=n};const flags=calculateFlags();if(flags>0){user.flags=flags;user.publicFlags=flags};return user}
+function applyFakes(user){if(!user||!s.enabled)return user;if(s.username)user.username=s.username;if(s.displayName)user.globalName=s.displayName;if(s.email)user.email=s.email;if(s.phone)user.phone=s.phone;if(s.bio)user.bio=s.bio;if(s.joinYear){const d=new Date(parseInt(s.joinYear),Math.floor(Math.random()*12),Math.floor(Math.random()*28)+1).getTime();user.createdAt=d;user.timestamp=d};if(s.accent){const n=parseInt(s.accent.replace("#",""),16);if(!isNaN(n))user.accentColor=n};if(s.accent2){const n=parseInt(s.accent2.replace("#",""),16);if(!isNaN(n))user.accentColor2=n};const flags=calculateFlags();if(flags>0){user.flags=flags;user.publicFlags=flags};return user}
 function refreshUser(){
 const UserStore=findByStoreName("UserStore")
 const raw=UserStore?.getCurrentUser?.()
@@ -28,7 +28,16 @@ const raw=UPS.getUserProfile(selfId)
 if(!raw)return
 const clone={...raw}
 clone.badges=getFakeBadges()
-if(s.joinYear){const d=new Date(parseInt(s.joinYear),Math.floor(Math.random()*12),Math.floor(Math.random()*28)+1).getTime();clone.joinedAt=d;clone.createdAt=d};if(s.accent){const n=parseInt(s.accent.replace("#",""),16);if(!isNaN(n)){clone.accentColor=n;clone.themeColors=[n,n]}}FluxDispatcher.dispatch({type:"USER_PROFILE_UPDATE",userProfile:clone})
+if(s.joinYear){const d=new Date(parseInt(s.joinYear),Math.floor(Math.random()*12),Math.floor(Math.random()*28)+1).getTime();clone.joinedAt=d;clone.createdAt=d};if(s.accent){const n1=parseInt(s.accent.replace("#",""),16);const n2=parseInt((s.accent2||s.accent).replace("#",""),16);if(!isNaN(n1)&&!isNaN(n2)){clone.accentColor=n1;clone.themeColors=[n1,n2]}}FluxDispatcher.dispatch({type:"USER_PROFILE_UPDATE",userProfile:clone})
+}
+function pickImage(cb){
+let I;try{I=findByProps("launchImageLibrary")}catch(e){}
+if(I&&I.launchImageLibrary){
+I.launchImageLibrary({mediaType:"photo",quality:1},function(r){
+if(r.assets&&r.assets[0]?.uri)cb(r.assets[0].uri)
+else console.warn("[LarpPlugin] No image selected")
+})
+}else{console.warn("[LarpPlugin] No image picker")}
 }
 function patchURLResolver(mod,fn,key){
 if(!mod||!fn)return
@@ -54,9 +63,10 @@ const[ph,setPh]=useState(s.phone||"")
 const[bi,setBi]=useState(s.bio||"")
 const[av,setAv]=useState(s.avatar||"")
 const[ba,setBa]=useState(s.banner||"")
-const[jy,setJy]=useState(s.joinYear||"")
-const[ac,setAc]=useState(s.accent||"")
 const[ad,setAd]=useState(s.avatarDecoration||"")
+const[jy,setJy]=useState(s.joinYear||"")
+const[ac1,setAc1]=useState(s.accent||"")
+const[ac2,setAc2]=useState(s.accent2||"")
 const[bd,setBd]=useState(s.badges||{})
 return h(RN.ScrollView,{style:{paddingBottom:24}},
 h(FormSection,{title:"Toggle"},h(FormSwitchRow,{label:"Enable LarpPlugin",value:e,onValueChange:function(v){setE(v);s.enabled=v;refreshUser();setTimeout(refreshProfile,100)}})),
@@ -65,11 +75,18 @@ h(FormInput,{title:"Fake Username",placeholder:"Enter fake username",value:un,on
 h(FormInput,{title:"Fake Display Name",placeholder:"Enter fake display name",value:dn,onChange:function(v){setDn(v);s.displayName=v;refreshUser()}}),
 h(FormInput,{title:"Fake Bio",placeholder:"Enter fake bio",value:bi,onChange:function(v){setBi(v);s.bio=v;refreshUser()}}),
 h(FormInput,{title:"Fake Join Year",placeholder:"e.g. 2020 (random day/month)",value:jy,onChange:function(v){setJy(v);s.joinYear=v;refreshUser();setTimeout(refreshProfile,100)}}),
-h(FormInput,{title:"Profile Accent Color",placeholder:"e.g. #FF0000",value:ac,onChange:function(v){setAc(v);s.accent=v;refreshUser();setTimeout(refreshProfile,100)}})),
+h(FormInput,{title:"Theme Color 1 (gradient left)",placeholder:"e.g. #FF0000",value:ac1,onChange:function(v){setAc1(v);s.accent=v;refreshUser();setTimeout(refreshProfile,100)}}),
+h(FormInput,{title:"Theme Color 2 (gradient right)",placeholder:"e.g. #0000FF",value:ac2,onChange:function(v){setAc2(v);s.accent2=v;refreshUser();setTimeout(refreshProfile,100)}})),
 h(FormSection,{title:"Media"},
-h(FormInput,{title:"Fake Avatar URL",placeholder:"https://i.imgur.com/...png",value:av,onChange:function(v){setAv(v);s.avatar=v;refreshUser()}}),
-h(FormInput,{title:"Fake Banner URL",placeholder:"https://i.imgur.com/...png",value:ba,onChange:function(v){setBa(v);s.banner=v;refreshUser()}}),
-h(FormInput,{title:"Fake Decoration URL",placeholder:"https://cdn.discord...",value:ad,onChange:function(v){setAd(v);s.avatarDecoration=v;refreshUser()}})),
+h(RN.TouchableOpacity,{style:{backgroundColor:"#5865F2",padding:12,borderRadius:8,marginBottom:8,alignItems:"center"},onPress:function(){pickImage(function(uri){setAv(uri);s.avatar=uri;refreshUser()})}},h(RN.Text,{style:{color:"#fff",fontWeight:"600"}},"Pick Avatar")),
+av?h(RN.Image,{source:{uri:av},style:{width:64,height:64,borderRadius:32,marginBottom:8}}):null,
+h(FormInput,{title:"Avatar URL",placeholder:"https://i.imgur.com/...png",value:av,onChange:function(v){setAv(v);s.avatar=v;refreshUser()}}),
+h(RN.TouchableOpacity,{style:{backgroundColor:"#5865F2",padding:12,borderRadius:8,marginBottom:8,alignItems:"center"},onPress:function(){pickImage(function(uri){setBa(uri);s.banner=uri;refreshUser()})}},h(RN.Text,{style:{color:"#fff",fontWeight:"600"}},"Pick Banner")),
+ba?h(RN.Image,{source:{uri:ba},style:{width:"100%",height:96,borderRadius:8,marginBottom:8}}):null,
+h(FormInput,{title:"Banner URL",placeholder:"https://i.imgur.com/...png",value:ba,onChange:function(v){setBa(v);s.banner=v;refreshUser()}}),
+h(RN.TouchableOpacity,{style:{backgroundColor:"#5865F2",padding:12,borderRadius:8,marginBottom:8,alignItems:"center"},onPress:function(){pickImage(function(uri){setAd(uri);s.avatarDecoration=uri;refreshUser()})}},h(RN.Text,{style:{color:"#fff",fontWeight:"600"}},"Pick Decoration")),
+ad?h(RN.Image,{source:{uri:ad},style:{width:64,height:64,borderRadius:32,marginBottom:8}}):null,
+h(FormInput,{title:"Decoration URL",placeholder:"https://cdn.discord...",value:ad,onChange:function(v){setAd(v);s.avatarDecoration=v;refreshUser()}})),
 h(FormSection,{title:"Badges"},BADGE_LIST.map(function(b){
 const checked=bd[b.key]||false
 return h(FormSwitchRow,{key:b.key,label:b.label,value:checked,onValueChange:function(v){const n={...bd};n[b.key]=v;setBd(n);s.badges=n;setTimeout(function(){refreshUser();refreshProfile()},0)}})
@@ -107,6 +124,29 @@ if(s.enabled&&s.avatar&&cu&&id===cu.id)return s.avatar
 return origGet.apply(this,arguments)
 }
 patches.push(function(){IM.getAvatarURL=origGet})
+}
+}
+let AS;try{AS=findByProps("getUserAvatarSource","getUserBannerSource")}catch(e){}
+if(AS){
+const origAS=AS.getUserAvatarSource
+if(origAS){
+AS.getUserAvatarSource=function(){
+const a=arguments,f=a[0],id=f&&typeof f==="object"?f.id:f
+const cu=UserStore.getCurrentUser()
+if(s.enabled&&s.avatar&&cu&&id===cu.id)return{uri:s.avatar}
+return origAS.apply(this,arguments)
+}
+patches.push(function(){AS.getUserAvatarSource=origAS})
+}
+const origBS=AS.getUserBannerSource
+if(origBS){
+AS.getUserBannerSource=function(){
+const a=arguments,f=a[0],id=f&&typeof f==="object"?f.id:f
+const cu=UserStore.getCurrentUser()
+if(s.enabled&&s.banner&&cu&&id===cu.id)return{uri:s.banner}
+return origBS.apply(this,arguments)
+}
+patches.push(function(){AS.getUserBannerSource=origBS})
 }
 }
 const UPS=findByProps("getUserProfile","getGuildMemberProfile")
