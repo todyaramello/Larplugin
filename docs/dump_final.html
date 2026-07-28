@@ -1,0 +1,5 @@
+<!DOCTYPE html><html><body>
+<h3>Paste into /eval (comprehensive search):</h3>
+<textarea id="t" rows="14" cols="85">(function(){var f=vendetta.metro.findAll;var r=[];function a(s){r.push(s)};var patterns=["deco","avatar","owned","purchased","locked","unlocked","canUse","entitle","collect","inventory","premium","nito","tier"];for(var p=0;p<patterns.length;p++){var pat=patterns[p];try{var mods=f(function(k,m){if(typeof m!="object"||m==null)return false;for(var kk in m){if(typeof m[kk]=="function"){var n=kk.toLowerCase();if(n.indexOf(pat)!=-1)return true}}return false});if(mods&&mods.length>0){a("==="+pat+" ("+mods.length+")===");for(var i=0;i<mods.length;i++){var m=mods[i],fns=[];for(var k in m)if(typeof m[k]=="function")fns.push(k);fns.sort();if(fns.length<=5)a("  "+fns.join(", "));else a("  ("+fns.length+" fns): "+fns.slice(0,5).join(", ")+"...")}}}catch(e){a(pat+":ERR")}};return r.join("\n")})()</textarea>
+<br><button onclick="navigator.clipboard.writeText(document.getElementById('t').value)">Copy</button>
+</body></html>
