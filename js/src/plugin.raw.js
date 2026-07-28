@@ -1,20 +1,3 @@
-var storage, useProxy, findByProps, React, ReactNative
-var ScrollView, View, Text, TextInput, Switch, StyleSheet
-
-function initModules(v) {
-    storage = v.plugin.storage
-    useProxy = v.storage.useProxy
-    findByProps = v.metro.findByProps
-    React = v.metro.common.React
-    ReactNative = v.metro.common.ReactNative
-    ScrollView = ReactNative.ScrollView
-    View = ReactNative.View
-    Text = ReactNative.Text
-    TextInput = ReactNative.TextInput
-    Switch = ReactNative.Switch
-    StyleSheet = ReactNative.StyleSheet
-}
-
 var BADGES = [
     { type: "staff", label: "Discord Staff", flag: 1 },
     { type: "partner", label: "Partnered Server Owner", flag: 2 },
@@ -44,63 +27,7 @@ function calculateFlags(badges) {
     return flags
 }
 
-var styles = null
-
-function ensureStyles() {
-    if (styles) return
-    styles = StyleSheet.create({
-        container: { flex: 1, padding: 16 },
-        section: { marginBottom: 20 },
-        sectionTitle: { fontSize: 18, fontWeight: "bold", color: "#fff", marginBottom: 8 },
-        label: { color: "#fff", fontSize: 15 },
-        input: { backgroundColor: "#2a2a2a", borderRadius: 8, padding: 10, color: "#fff", fontSize: 15, marginTop: 4 },
-        badgeRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: "#333" },
-    })
-}
-
-function Settings() {
-    useProxy(storage)
-    ensureStyles()
-    return React.createElement(ScrollView, { style: styles.container },
-        React.createElement(View, { style: styles.section },
-            React.createElement(Text, { style: styles.sectionTitle }, "Profile"),
-            React.createElement(Text, { style: styles.label }, "Fake Username"),
-            React.createElement(TextInput, { style: styles.input, placeholder: "Enter fake username", placeholderTextColor: "#666", value: storage.username, onChangeText: function(v) { storage.username = v } }),
-            React.createElement(Text, { style: [styles.label, { marginTop: 12 }] }, "Fake Display Name"),
-            React.createElement(TextInput, { style: styles.input, placeholder: "Enter fake display name", placeholderTextColor: "#666", value: storage.displayName, onChangeText: function(v) { storage.displayName = v } }),
-            React.createElement(Text, { style: [styles.label, { marginTop: 12 }] }, "Fake Bio"),
-            React.createElement(TextInput, { style: styles.input, placeholder: "Enter fake bio", placeholderTextColor: "#666", value: storage.bio, onChangeText: function(v) { storage.bio = v } })
-        ),
-        React.createElement(View, { style: styles.section },
-            React.createElement(Text, { style: styles.sectionTitle }, "Contact"),
-            React.createElement(Text, { style: styles.label }, "Fake Email"),
-            React.createElement(TextInput, { style: styles.input, placeholder: "Enter fake email", placeholderTextColor: "#666", value: storage.email, onChangeText: function(v) { storage.email = v } }),
-            React.createElement(Text, { style: [styles.label, { marginTop: 12 }] }, "Fake Phone"),
-            React.createElement(TextInput, { style: styles.input, placeholder: "Enter fake phone number", placeholderTextColor: "#666", value: storage.phone, onChangeText: function(v) { storage.phone = v } })
-        ),
-        React.createElement(View, { style: styles.section },
-            React.createElement(Text, { style: styles.sectionTitle }, "Media"),
-            React.createElement(Text, { style: styles.label }, "Fake Avatar URL"),
-            React.createElement(TextInput, { style: styles.input, placeholder: "https://example.com/avatar.png", placeholderTextColor: "#666", value: storage.avatar, onChangeText: function(v) { storage.avatar = v } }),
-            React.createElement(Text, { style: [styles.label, { marginTop: 12 }] }, "Fake Banner URL"),
-            React.createElement(TextInput, { style: styles.input, placeholder: "https://example.com/banner.png", placeholderTextColor: "#666", value: storage.banner, onChangeText: function(v) { storage.banner = v } }),
-            React.createElement(Text, { style: [styles.label, { marginTop: 12 }] }, "Fake Avatar Decoration URL"),
-            React.createElement(TextInput, { style: styles.input, placeholder: "https://example.com/decoration.png", placeholderTextColor: "#666", value: storage.avatarDecoration, onChangeText: function(v) { storage.avatarDecoration = v } })
-        ),
-        React.createElement(View, { style: styles.section },
-            React.createElement(Text, { style: styles.sectionTitle }, "Badges"),
-            BADGES.map(function(badge) {
-                return React.createElement(View, { key: badge.type, style: styles.badgeRow },
-                    React.createElement(Text, { style: styles.label }, badge.label),
-                    React.createElement(Switch, { value: !!storage.badges[badge.type], onValueChange: function() { storage.badges[badge.type] = !storage.badges[badge.type] } })
-                )
-            })
-        ),
-        React.createElement(View, { style: { height: 40 } })
-    )
-}
-
-function applyFakes(user) {
+function applyFakes(storage, user) {
     if (!user || !storage.enabled) return
     if (storage.username) user.username = storage.username
     if (storage.displayName) user.globalName = storage.displayName
@@ -121,6 +48,8 @@ function applyFakes(user) {
 var unpatch = null
 
 function onLoad() {
+    var storage = vendetta.plugin.storage
+    var findByProps = vendetta.metro.findByProps
     storage.enabled = storage.enabled !== undefined ? storage.enabled : true
     storage.username = storage.username || ""
     storage.displayName = storage.displayName || ""
@@ -138,7 +67,7 @@ function onLoad() {
     var orig = Dispatcher.dispatch.bind(Dispatcher)
     Dispatcher.dispatch = function(e) {
         if (e && (e.type === "CURRENT_USER_UPDATE" || e.type === "CONNECTION_OPEN")) {
-            if (e.user) applyFakes(e.user)
+            if (e.user) applyFakes(storage, e.user)
         }
         return orig(e)
     }
@@ -147,4 +76,63 @@ function onLoad() {
 
 function onUnload() {
     if (unpatch) { unpatch(); unpatch = null }
+}
+
+function Settings() {
+    var storage = vendetta.plugin.storage
+    var React = vendetta.metro.common.React
+    var ReactNative = vendetta.metro.common.ReactNative
+    var ScrollView = ReactNative.ScrollView
+    var View = ReactNative.View
+    var Text = ReactNative.Text
+    var TextInput = ReactNative.TextInput
+    var Switch = ReactNative.Switch
+    var StyleSheet = ReactNative.StyleSheet
+
+    var styles = StyleSheet.create({
+        container: { flex: 1, padding: 16 },
+        section: { marginBottom: 20 },
+        sectionTitle: { fontSize: 18, fontWeight: "bold", color: "#fff", marginBottom: 8 },
+        label: { color: "#fff", fontSize: 15 },
+        input: { backgroundColor: "#2a2a2a", borderRadius: 8, padding: 10, color: "#fff", fontSize: 15, marginTop: 4 },
+        badgeRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: "#333" },
+    })
+
+    return React.createElement(ScrollView, { style: styles.container },
+        React.createElement(View, { style: styles.section },
+            React.createElement(Text, { style: styles.sectionTitle }, "Profile"),
+            React.createElement(Text, { style: styles.label }, "Fake Username"),
+            React.createElement(TextInput, { style: styles.input, placeholder: "Enter fake username", placeholderTextColor: "#666", value: storage.username || "", onChangeText: function(v) { storage.username = v } }),
+            React.createElement(Text, { style: [styles.label, { marginTop: 12 }] }, "Fake Display Name"),
+            React.createElement(TextInput, { style: styles.input, placeholder: "Enter fake display name", placeholderTextColor: "#666", value: storage.displayName || "", onChangeText: function(v) { storage.displayName = v } }),
+            React.createElement(Text, { style: [styles.label, { marginTop: 12 }] }, "Fake Bio"),
+            React.createElement(TextInput, { style: styles.input, placeholder: "Enter fake bio", placeholderTextColor: "#666", value: storage.bio || "", onChangeText: function(v) { storage.bio = v } })
+        ),
+        React.createElement(View, { style: styles.section },
+            React.createElement(Text, { style: styles.sectionTitle }, "Contact"),
+            React.createElement(Text, { style: styles.label }, "Fake Email"),
+            React.createElement(TextInput, { style: styles.input, placeholder: "Enter fake email", placeholderTextColor: "#666", value: storage.email || "", onChangeText: function(v) { storage.email = v } }),
+            React.createElement(Text, { style: [styles.label, { marginTop: 12 }] }, "Fake Phone"),
+            React.createElement(TextInput, { style: styles.input, placeholder: "Enter fake phone number", placeholderTextColor: "#666", value: storage.phone || "", onChangeText: function(v) { storage.phone = v } })
+        ),
+        React.createElement(View, { style: styles.section },
+            React.createElement(Text, { style: styles.sectionTitle }, "Media"),
+            React.createElement(Text, { style: styles.label }, "Fake Avatar URL"),
+            React.createElement(TextInput, { style: styles.input, placeholder: "https://example.com/avatar.png", placeholderTextColor: "#666", value: storage.avatar || "", onChangeText: function(v) { storage.avatar = v } }),
+            React.createElement(Text, { style: [styles.label, { marginTop: 12 }] }, "Fake Banner URL"),
+            React.createElement(TextInput, { style: styles.input, placeholder: "https://example.com/banner.png", placeholderTextColor: "#666", value: storage.banner || "", onChangeText: function(v) { storage.banner = v } }),
+            React.createElement(Text, { style: [styles.label, { marginTop: 12 }] }, "Fake Avatar Decoration URL"),
+            React.createElement(TextInput, { style: styles.input, placeholder: "https://example.com/decoration.png", placeholderTextColor: "#666", value: storage.avatarDecoration || "", onChangeText: function(v) { storage.avatarDecoration = v } })
+        ),
+        React.createElement(View, { style: styles.section },
+            React.createElement(Text, { style: styles.sectionTitle }, "Badges"),
+            BADGES.map(function(badge) {
+                return React.createElement(View, { key: badge.type, style: styles.badgeRow },
+                    React.createElement(Text, { style: styles.label }, badge.label),
+                    React.createElement(Switch, { value: !!(storage.badges && storage.badges[badge.type]), onValueChange: function() { if (!storage.badges) storage.badges = {}; storage.badges[badge.type] = !storage.badges[badge.type] } })
+                )
+            })
+        ),
+        React.createElement(View, { style: { height: 40 } })
+    )
 }

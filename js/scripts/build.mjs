@@ -17,13 +17,10 @@ await mkdir(outDir, { recursive: true })
 
 let source = await readFile(sourceFile, 'utf-8')
 
-const wrapped = `(function(d,vendetta){"use strict";
-var i = vendetta.plugin, n = vendetta, c = vendetta.metro.common, m = vendetta.metro, s = vendetta.storage;
+const wrapped = `(function(d){d.default={onLoad:function(){},onUnload:function(){},settings:null};Object.defineProperty(d,"__esModule",{value:!0});
 ${source}
-initModules(vendetta);
 d.default={onLoad:onLoad,onUnload:onUnload,settings:Settings};
-Object.defineProperty(d,"__esModule",{value:!0});
-return d})({},vendetta)`
+return d})({})`
 
 await writeFile(join(outDir, 'raw.js'), wrapped)
 
