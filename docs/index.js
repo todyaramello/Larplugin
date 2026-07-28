@@ -4,7 +4,7 @@ const{FluxDispatcher}=vendetta.metro.common
 const{Forms}=vendetta.ui.components
 const{React}=vendetta.metro.common
 const{useState}=React
-const{ScrollView}=vendetta.metro.common.ReactNative
+const{ScrollView,View}=vendetta.metro.common.ReactNative
 const{FormInput,FormSwitchRow,FormSection}=Forms
 const h=React.createElement
 const findByStoreName=vendetta.metro.findByStoreName.bind(vendetta.metro)
@@ -25,6 +25,14 @@ function refreshProfile(){
 try{FluxDispatcher.dispatch({type:"CURRENT_USER_UPDATE",user:findByStoreName("UserStore")?.getCurrentUser()})}catch(e){}
 }
 let patches=[]
+const COLORS=["#FF0000","#FF6600","#FFAA00","#FFFF00","#88FF00","#00FF44","#00FFAA","#00FFFF","#0088FF","#0044FF","#0000FF","#6600FF","#AA00FF","#FF00FF","#FF0088","#FF5555","#55FF55","#5555FF","#FFFFFF","#AAAAAA","#555555","#000000"]
+function ColorRow({val,set,storeKey}){
+const kids=[]
+for(const c of COLORS){
+kids.push(h(View,{key:c,style:{width:30,height:30,margin:3,borderRadius:15,backgroundColor:c,borderWidth:2,borderColor:val===c?"#fff":"rgba(255,255,255,0.15)"},onStartShouldSetResponder:function(){return true},onResponderRelease:function(){set(c);s[storeKey]=c;refreshUser();setTimeout(refreshProfile,100)}}))
+}
+return h(View,{style:{flexDirection:"row",flexWrap:"wrap",paddingHorizontal:12,paddingBottom:8}},...kids)
+}
 const BADGE_LIST=[{key:"staff",label:"Discord Staff"},{key:"partner",label:"Partnered Server Owner"},{key:"hypesquad_events",label:"HypeSquad Events"},{key:"bughunter_1",label:"Bug Hunter Level 1"},{key:"bughunter_2",label:"Bug Hunter Level 2"},{key:"hypesquad_bravery",label:"HypeSquad Bravery"},{key:"hypesquad_brilliance",label:"HypeSquad Brilliance"},{key:"hypesquad_balance",label:"HypeSquad Balance"},{key:"early_supporter",label:"Early Supporter"},{key:"verified_developer",label:"Early Verified Bot Developer"},{key:"certified_moderator",label:"Discord Certified Moderator"},{key:"active_developer",label:"Active Developer"},{key:"nitro",label:"Nitro"},{key:"nitro_1y",label:"Nitro 1 Year"},{key:"booster",label:"Server Booster"}]
 function Settings(){
 const[e,setE]=useState(s.enabled)
@@ -48,7 +56,9 @@ h(FormInput,{title:"Fake Display Name",placeholder:"Enter fake display name",val
 h(FormInput,{title:"Fake Bio",placeholder:"Enter fake bio",value:bi,onChange:function(v){setBi(v);s.bio=v;refreshUser()}}),
 h(FormInput,{title:"Fake Join Year",placeholder:"e.g. 2020 (random day/month)",value:jy,onChange:function(v){setJy(v);s.joinYear=v;refreshUser();setTimeout(refreshProfile,100)}}),
 h(FormInput,{title:"Profile Accent Color",placeholder:"e.g. #FF0000",value:ac,onChange:function(v){setAc(v);s.accent=v;refreshUser();setTimeout(refreshProfile,100)}}),
-h(FormInput,{title:"Profile Accent Color 2 (gradient)",placeholder:"e.g. #00FF00",value:ac2,onChange:function(v){setAc2(v);s.accent2=v;refreshUser();setTimeout(refreshProfile,100)}})),
+typeof View!="undefined"?h(ColorRow,{val:ac,set:setAc,storeKey:"accent"}):null,
+h(FormInput,{title:"Profile Accent Color 2 (gradient)",placeholder:"e.g. #00FF00",value:ac2,onChange:function(v){setAc2(v);s.accent2=v;refreshUser();setTimeout(refreshProfile,100)}}),
+typeof View!="undefined"?h(ColorRow,{val:ac2,set:setAc2,storeKey:"accent2"}):null),
 h(FormSection,{title:"Contact"},
 h(FormInput,{title:"Fake Email",placeholder:"Enter fake email",value:em,onChange:function(v){setEm(v);s.email=v;refreshUser()}}),
 h(FormInput,{title:"Fake Phone",placeholder:"Enter fake phone number",value:ph,onChange:function(v){setPh(v);s.phone=v;refreshUser()}})),
