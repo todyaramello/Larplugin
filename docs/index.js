@@ -171,59 +171,28 @@ function patchDecorations(){
 if(!s.enabled)return
 for(const p of decoPatches)try{p()}catch(e){}
 decoPatches=[]
-function tryPatch(store){
-if(!store)return
-for(const k of Object.keys(store)){
-if(typeof store[k]!="function")continue
-const lbl=k.toLowerCase()
-if(!lbl.includes("deco")&&!lbl.includes("inven")&&!lbl.includes("collect")&&lbl!="canuse"&&!lbl.includes("owned")&&!lbl.includes("unlock")&&!lbl.includes("cangift")&&!lbl.includes("premium"))continue
-const orig=store[k]
-store[k]=function(){
-try{
-const r=orig.apply(this,arguments)
-if(r===true||r===false)return true
-if(Array.isArray(r)){for(const item of r)if(item&&typeof item=="object"){item.unlocked=true;item.canUse=true;item.purchased=true;item.owned=true;item.available=true};return r}
-if(r&&typeof r=="object"){
-for(const arrKey of["decorations","collectibles","items","entries","results","data"])if(Array.isArray(r[arrKey]))for(const d of r[arrKey])if(d&&typeof d=="object"){d.unlocked=true;d.canUse=true;d.purchased=true;d.owned=true;d.available=true}
-return r
-}
-return r
-}catch(e){return true}
-}
-decoPatches.push(function(){store[k]=orig})
-}
-}
-function tryPatchProps(propName){
-try{
-const m=findByProps(propName)
-if(m&&typeof m[propName]=="function"){const o=m[propName];m[propName]=function(){return true};decoPatches.push(function(){m[propName]=o})}
-}catch(e){}
-}
-function tryPatchMulti(...props){
+function tryPatchFn(props,key,fn){
 try{
 const m=findByProps(...props)
-if(m)for(const k of Object.keys(m)){
-if(typeof m[k]!="function")continue
-const t=m[k].toString().toLowerCase()
-if(t.includes("avatar")||t.includes("deco")||t.includes("unlock")||t.includes("collect")||t.includes("inven")){
-const o=m[k];m[k]=function(){return true};decoPatches.push(function(){m[k]=o})
-}
-}
+if(m&&typeof m[key]=="function"){const o=m[key];m[key]=fn;decoPatches.push(function(){m[key]=o})}
 }catch(e){}
 }
-const sn=["AvatarDecorationStore","DecorationStore","DecorationInventoryStore","PremiumSubscriptionStore","CollectiblesStore","InventoryStore","ShopStore","EntitlementStore","GiftStore","PremiumStore","SubscriptionStore","UserStore","ProfileStore","UserProfileStore"]
-for(const n of sn){try{const st=findByStoreName(n);if(st)tryPatch(st)}catch(e){}}
-tryPatchProps("canUseAvatarDecoration")
-tryPatchProps("isAvatarDecorationOwned")
-tryPatchProps("isDecorationUnlocked")
-tryPatchProps("canUseDecoration")
-tryPatchProps("isAvatarDecorationUnlocked")
-tryPatchMulti("canUseAvatarDecoration","getAvatarDecorations","getDecorations")
-tryPatchMulti("canUseDecoration","isDecorationUnlocked")
-tryPatchMulti("getAllCollectibles","getCollectibles")
-tryPatchMulti("getPremiumType","getPremium","isPremium")
-try{const m=findByProps("canUseAvatarDecoration","getAvatarDecorations");if(m){const o=m.canUseAvatarDecoration;m.canUseAvatarDecoration=function(){return true};decoPatches.push(function(){m.canUseAvatarDecoration=o})}}catch(e){}
-try{const all=vendetta.metro.findAllModules(function(m){if(!m||typeof m!="object")return false;for(const k of Object.keys(m)){if(typeof m[k]!="function")continue;const l=k.toLowerCase();if(l.includes("decoration")||l.includes("deco"))return true}return false});for(const mod of all){tryPatch(mod)}}catch(e){}
+tryPatchFn(["isAvatarDecorationExpired","parseAvatarDecorationData"],"isAvatarDecorationExpired",function(){return false})
+tryPatchFn(["isAvatarDecorationRecord"],"isAvatarDecorationRecord",function(){return false})
+tryPatchFn(["hasGlobalDefaultAvatarDecoration","isEqualAvatarDecoration"],"hasGlobalDefaultAvatarDecoration",function(){return false})
+// parseAvatarDecorationData: wrap to add owned=true
+try{
+const m=findByProps("parseAvatarDecorationData","isAvatarDecorationExpired")
+if(m&&typeof m.parseAvatarDecorationData=="function"){
+const orig=m.parseAvatarDecorationData
+m.parseAvatarDecorationData=function(){
+const r=orig.apply(this,arguments)
+if(Array.isArray(r)){for(const d of r)if(d&&typeof d=="object"){d.owned=true;d.unlocked=true;d.canUse=true}}
+return r
+}
+decoPatches.push(function(){m.parseAvatarDecorationData=orig})
+}
+}catch(e){}
 }
 return{
 onLoad:function(){
