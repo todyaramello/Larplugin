@@ -1,0 +1,5 @@
+<!DOCTYPE html><html><body>
+<h3>Find getAvatarDecorationURL and test with a real hash</h3>
+<textarea id="t" rows="12" cols="85">(function(){var fp=vendetta.metro.findByProps;try{var m=fp("getAvatarDecorationURL");if(!m){var all=fp("getAvatarDecorationPreviewUrl","getCollectibleTypeName");if(all){var fns=[];for(var k in all)if(typeof all[k]=="function")fns.push(k);return "Found module: "+fns.join(", ")}}}catch(e){};return "NOT FOUND"})()</textarea>
+<br><button onclick="navigator.clipboard.writeText(document.getElementById('t').value)">Copy</button>
+</body></html>
