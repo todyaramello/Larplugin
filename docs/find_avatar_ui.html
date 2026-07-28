@@ -1,0 +1,6 @@
+<!DOCTYPE html><html><body>
+<h3>Find AvatarDecorationsAbstractUI module and dump function names</h3>
+<textarea id="t" rows="12" cols="85">(function(){var f=vendetta.metro.findAll;var r=[];function a(s){r.push(s)};try{var mods=f(function(k,m){if(typeof m=="function"&&typeof m.name=="string"&&m.name.indexOf("AvatarDecorationsAbstractUI")!=-1)return true;return false});if(mods&&mods.length>0){a("Found "+mods.length+" modules");for(var i=0;i<mods.length;i++){var m=mods[i];var na=m.name||"anon";var fns=[];if(typeof m=="function"){var p=m.prototype;if(p){fns=Object.getOwnPropertyNames(p).filter(function(n){return n!="constructor"&&typeof p[n]=="function"})}};a("Module "+i+" ("+na+"): "+fns.length+" fns");// Print first 50
+for(var j=0;j<fns.length&&j<80;j++){a("  "+fns[j])}}}else a("No exact match")}catch(e){a("ERR: "+e.message)};return r.join("\n")})()</textarea>
+<br><button onclick="navigator.clipboard.writeText(document.getElementById('t').value)">Copy</button>
+</body></html>
