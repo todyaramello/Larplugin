@@ -2,8 +2,8 @@
 const s=vendetta.plugin.storage
 const{FluxDispatcher}=vendetta.metro.common
 const{Forms}=vendetta.ui.components
-const{useProxy}=vendetta.storage
 const{React}=vendetta.metro.common
+const{useState,useEffect}=React
 const{ScrollView}=vendetta.metro.common.ReactNative
 const{FormInput,FormSwitchRow,FormSection}=Forms
 const h=React.createElement
@@ -13,9 +13,37 @@ function applyFakes(user){if(!user||!s.enabled)return;if(s.username)user.usernam
 let origDispatch=null
 function onDispatch(e){if(e&&(e.type==="CURRENT_USER_UPDATE"||e.type==="CONNECTION_OPEN")){if(e.user)applyFakes(e.user)}return origDispatch(e)}
 const BADGE_LIST=[{key:"staff",label:"Discord Staff"},{key:"partner",label:"Partnered Server Owner"},{key:"hypesquad_events",label:"HypeSquad Events"},{key:"bughunter_1",label:"Bug Hunter Level 1"},{key:"bughunter_2",label:"Bug Hunter Level 2"},{key:"hypesquad_bravery",label:"HypeSquad Bravery"},{key:"hypesquad_brilliance",label:"HypeSquad Brilliance"},{key:"hypesquad_balance",label:"HypeSquad Balance"},{key:"early_supporter",label:"Early Supporter"},{key:"verified_developer",label:"Early Verified Bot Developer"},{key:"certified_moderator",label:"Discord Certified Moderator"},{key:"active_developer",label:"Active Developer"},{key:"http_interactions",label:"HTTP Interactions"},{key:"nitro",label:"Nitro"},{key:"nitro_boost",label:"Server Boosting"},{key:"nitro_basic",label:"Nitro Basic"}]
-function Settings(){useProxy(s);return h(ScrollView,{style:{paddingBottom:24}},h(FormSection,{title:"Toggle"},h(FormSwitchRow,{label:"Enable LarpPlugin",value:s.enabled,onValueChange:function(v){s.enabled=v}})),h(FormSection,{title:"Profile"},h(FormInput,{title:"Fake Username",placeholder:"Enter fake username",value:s.username,onChange:function(v){s.username=v}}),h(FormInput,{title:"Fake Display Name",placeholder:"Enter fake display name",value:s.displayName,onChange:function(v){s.displayName=v}}),h(FormInput,{title:"Fake Bio",placeholder:"Enter fake bio",value:s.bio,onChange:function(v){s.bio=v}})),h(FormSection,{title:"Contact"},h(FormInput,{title:"Fake Email",placeholder:"Enter fake email",value:s.email,onChange:function(v){s.email=v}}),h(FormInput,{title:"Fake Phone",placeholder:"Enter fake phone number",value:s.phone,onChange:function(v){s.phone=v}})),h(FormSection,{title:"Media"},h(FormInput,{title:"Fake Avatar URL",placeholder:"https://example.com/avatar.png",value:s.avatar,onChange:function(v){s.avatar=v}}),h(FormInput,{title:"Fake Banner URL",placeholder:"https://example.com/banner.png",value:s.banner,onChange:function(v){s.banner=v}}),h(FormInput,{title:"Fake Avatar Decoration URL",placeholder:"https://example.com/decoration.png",value:s.avatarDecoration,onChange:function(v){s.avatarDecoration=v}})),h(FormSection,{title:"Badges"},BADGE_LIST.map(function(badge){return h(FormSwitchRow,{key:badge.key,label:badge.label,value:s.badges&&s.badges[badge.key]||false,onValueChange:function(v){if(!s.badges)s.badges={};s.badges[badge.key]=v}})})))}
+function Settings(){
+const[e,setE]=useState(s.enabled)
+const[un,setUn]=useState(s.username||"")
+const[dn,setDn]=useState(s.displayName||"")
+const[em,setEm]=useState(s.email||"")
+const[ph,setPh]=useState(s.phone||"")
+const[bi,setBi]=useState(s.bio||"")
+const[av,setAv]=useState(s.avatar||"")
+const[ba,setBa]=useState(s.banner||"")
+const[ad,setAd]=useState(s.avatarDecoration||"")
+const[bd,setBd]=useState(s.badges||{})
+return h(ScrollView,{style:{paddingBottom:24}},
+h(FormSection,{title:"Toggle"},h(FormSwitchRow,{label:"Enable LarpPlugin",value:e,onValueChange:function(v){setE(v);s.enabled=v}})),
+h(FormSection,{title:"Profile"},
+h(FormInput,{title:"Fake Username",placeholder:"Enter fake username",value:un,onChange:function(v){setUn(v);s.username=v}}),
+h(FormInput,{title:"Fake Display Name",placeholder:"Enter fake display name",value:dn,onChange:function(v){setDn(v);s.displayName=v}}),
+h(FormInput,{title:"Fake Bio",placeholder:"Enter fake bio",value:bi,onChange:function(v){setBi(v);s.bio=v}})),
+h(FormSection,{title:"Contact"},
+h(FormInput,{title:"Fake Email",placeholder:"Enter fake email",value:em,onChange:function(v){setEm(v);s.email=v}}),
+h(FormInput,{title:"Fake Phone",placeholder:"Enter fake phone number",value:ph,onChange:function(v){setPh(v);s.phone=v}})),
+h(FormSection,{title:"Media"},
+h(FormInput,{title:"Fake Avatar URL",placeholder:"https://example.com/avatar.png",value:av,onChange:function(v){setAv(v);s.avatar=v}}),
+h(FormInput,{title:"Fake Banner URL",placeholder:"https://example.com/banner.png",value:ba,onChange:function(v){setBa(v);s.banner=v}}),
+h(FormInput,{title:"Fake Avatar Decoration URL",placeholder:"https://example.com/decoration.png",value:ad,onChange:function(v){setAd(v);s.avatarDecoration=v}})),
+h(FormSection,{title:"Badges"},BADGE_LIST.map(function(b){
+const checked=bd[b.key]||false
+return h(FormSwitchRow,{key:b.key,label:b.label,value:checked,onValueChange:function(v){const n={...bd};n[b.key]=v;setBd(n);s.badges=n}})
+})))
+}
 return{
-onLoad:function(){s.enabled=s.enabled===undefined?true:s.enabled;s.username=s.username||"";s.displayName=s.displayName||"";s.email=s.email||"";s.phone=s.phone||"";s.bio=s.bio||"";s.avatar=s.avatar||"";s.banner=s.banner||"";s.avatarDecoration=s.avatarDecoration||"";s.premiumType=s.premiumType||null;s.badges=s.badges||{};origDispatch=FluxDispatcher.dispatch.bind(FluxDispatcher);FluxDispatcher.dispatch=onDispatch;vendetta.logger.log("[LarpPlugin] Loaded")},
+onLoad:function(){s.enabled=s.enabled===undefined?true:s.enabled;origDispatch=FluxDispatcher.dispatch.bind(FluxDispatcher);FluxDispatcher.dispatch=onDispatch;vendetta.logger.log("[LarpPlugin] Loaded")},
 onUnload:function(){if(origDispatch){FluxDispatcher.dispatch=origDispatch;origDispatch=null}vendetta.logger.log("[LarpPlugin] Unloaded")},
 settings:Settings}
 })()
