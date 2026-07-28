@@ -178,18 +178,13 @@ if(m&&typeof m[key]=="function"){const o=m[key];m[key]=fn;decoPatches.push(funct
 }catch(e){}
 }
 tryPatchFn(["isAvatarDecorationExpired","parseAvatarDecorationData"],"isAvatarDecorationExpired",function(){return false})
-tryPatchFn(["isAvatarDecorationRecord"],"isAvatarDecorationRecord",function(){return false})
-tryPatchFn(["hasGlobalDefaultAvatarDecoration","isEqualAvatarDecoration"],"hasGlobalDefaultAvatarDecoration",function(){return false})
+
 // parseAvatarDecorationData: wrap to add owned=true
 try{
 const m=findByProps("parseAvatarDecorationData","isAvatarDecorationExpired")
 if(m&&typeof m.parseAvatarDecorationData=="function"){
 const orig=m.parseAvatarDecorationData
-m.parseAvatarDecorationData=function(){
-const r=orig.apply(this,arguments)
-if(Array.isArray(r)){for(const d of r)if(d&&typeof d=="object"){d.owned=true;d.unlocked=true;d.canUse=true}}
-return r
-}
+m.parseAvatarDecorationData=function(){try{const r=orig.apply(this,arguments);if(Array.isArray(r))for(const d of r)if(d&&typeof d=="object"){d.owned=true;d.unlocked=true;d.canUse=true};return r}catch(e){try{return orig.apply(this,arguments)}catch(e2){return arguments[0]||[]}}}
 decoPatches.push(function(){m.parseAvatarDecorationData=orig})
 }
 }catch(e){}
@@ -198,11 +193,7 @@ try{
 const m=findByProps("getPurchaseDisplayInfo","getAvatarDecorationPreviewUrl")
 if(m&&typeof m.getPurchaseDisplayInfo=="function"){
 const orig=m.getPurchaseDisplayInfo
-m.getPurchaseDisplayInfo=function(){
-const r=orig.apply(this,arguments)
-if(r&&typeof r=="object"&&!r.isPurchased){r.isPurchased=true;r.owned=true;r.isSubscription=false}
-return r
-}
+m.getPurchaseDisplayInfo=function(){try{const r=orig.apply(this,arguments);if(r&&typeof r=="object"){r.isPurchased=true;r.owned=true;r.isSubscription=false};return r}catch(e){try{return orig.apply(this,arguments)}catch(e2){return arguments[0]||{isPurchased:true}}}}
 decoPatches.push(function(){m.getPurchaseDisplayInfo=orig})
 }
 }catch(e){}
