@@ -7,7 +7,7 @@ import { createHash } from 'crypto'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const outDir = join(__dirname, '..', 'build', 'revenge')
-const entryPoint = join(__dirname, '..', 'src', 'index.ts')
+const entryPoint = join(__dirname, '..', 'src', 'plugin.tsx')
 
 if (existsSync(outDir)) {
     await rm(outDir, { recursive: true })
@@ -15,59 +15,38 @@ if (existsSync(outDir)) {
 
 await mkdir(outDir, { recursive: true })
 
-const vendettaMap = {
-    '@vendetta/plugin': 'vendetta',
-    '@vendetta/metro': 'vendetta.metro',
-    '@vendetta/metro/common': 'vendetta.metro.common',
-    '@vendetta/patcher': 'vendetta.patcher',
-    '@vendetta/storage': 'vendetta.storage',
-    '@vendetta/ui/components': 'vendetta.ui.components',
-    '@vendetta/ui/assets': 'vendetta.ui.assets',
-    '@vendetta/logger': 'vendetta.logger',
-}
-
 await build({
     entryPoints: [entryPoint],
-    bundle: true,
-    outfile: join(outDir, 'index.js'),
-    format: 'cjs',
+    outfile: join(outDir, 'raw.js'),
+    bundle: false,
     target: 'es2020',
-    platform: 'browser',
-    minify: true,
+    platform: 'neutral',
+    minify: false,
     sourcemap: false,
-    treeShaking: true,
     define: {
         'process.env.NODE_ENV': '"production"',
-        'IS_DEV': 'false',
     },
-    plugins: [
-        {
-            name: 'vendetta-resolve',
-            setup(build) {
-                build.onResolve({ filter: /^@vendetta\// }, args => ({
-                    path: args.path,
-                    namespace: 'vendetta-ns',
-                }))
-
-                build.onLoad({ filter: /.*/, namespace: 'vendetta-ns' }, args => ({
-                    contents: `module.exports = ${vendettaMap[args.path] || args.path};`,
-                    loader: 'js',
-                }))
-            },
-        },
-    ],
+    loader: { '.tsx': 'tsx' },
 })
 
-let code = await readFile(join(outDir, 'index.js'), 'utf-8')
+let code = await readFile(join(outDir, 'raw.js'), 'utf-8')
 
-code = `(function($__exp, vendetta) {
-var module = { exports: $__exp };
-var exports = $__exp;
-${code.replace(/module\.exports\s*=/g, '$__exp =')}
-return $__exp;
-})({},vendetta)`
+code = code.replace(/^"use strict";\s*/, '')
 
-await writeFile(join(outDir, 'index.js'), code)
+code = `(function(d,vendetta){"use strict";${code}d.default={onLoad:onLoad,onUnload:onUnload,settings:settings};Object.defineProperty(d,"__esModule",{value:!0});return d})({},vendetta)`
+
+await writeFile(join(outDir, 'raw.js'), code)
+
+await build({
+    entryPoints: [join(outDir, 'raw.js')],
+    outfile: join(outDir, 'index.js'),
+    bundle: false,
+    minify: true,
+    sourcemap: false,
+    target: 'es2020',
+})
+
+await rm(join(outDir, 'raw.js'))
 
 const jsContent = await readFile(join(outDir, 'index.js'))
 const hash = createHash('sha256').update(jsContent).digest('hex')
