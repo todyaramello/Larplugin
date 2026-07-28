@@ -1,8 +1,9 @@
 import { build } from 'esbuild'
-import { mkdir, writeFile, rm } from 'fs/promises'
+import { mkdir, writeFile, rm, readFile } from 'fs/promises'
 import { existsSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
+import { createHash } from 'crypto'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const outDir = join(__dirname, '..', 'build', 'revenge')
@@ -39,13 +40,8 @@ await build({
                 }))
 
                 build.onLoad({ filter: /.*/, namespace: 'vendetta-ns' }, args => {
-                    const modPath = args.path
-                        .replace('@vendetta/', '')
-                        .split('/')
-                    const camel = modPath
-                        .map((s, i) => (i === 0 ? s : s[0].toUpperCase() + s.slice(1)))
-                        .join('.')
-                    const globalRef = `window.vendetta.${camel}`
+                    const modPath = args.path.replace('@vendetta/', '')
+                    const globalRef = `window.vendetta.${modPath}`
 
                     return {
                         contents: `module.exports = ${globalRef};`,
@@ -57,6 +53,9 @@ await build({
     ],
 })
 
+const jsContent = await readFile(join(outDir, 'index.js'))
+const hash = createHash('sha256').update(jsContent).digest('hex')
+
 const manifest = {
     name: 'LarpPlugin',
     description: 'Fake your Discord profile for LARPing - username, email, badges, avatar, bio and more',
@@ -67,11 +66,13 @@ const manifest = {
         },
     ],
     main: 'index.js',
+    hash,
     vendetta: {
         icon: 'PersonStandingIcon',
     },
 }
 
 await writeFile(join(outDir, 'manifest.json'), JSON.stringify(manifest, null, 4))
+await writeFile(join(outDir, '.nojekyll'), '')
 
 console.log('Build successful! Output in build/revenge/')
