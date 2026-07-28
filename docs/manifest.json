@@ -7,7 +7,7 @@
       "id": "1105562368433459321"
     }
   ],
-  "main": "src/index.ts",
+  "main": "src/index.js",
   "vendetta": {
     "icon": "PersonStandingIcon"
   }

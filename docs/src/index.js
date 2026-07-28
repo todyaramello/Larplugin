@@ -3,21 +3,9 @@ import { storage } from "@vendetta/plugin";
 import { logger } from "@vendetta";
 import Settings from "./Settings";
 
-const typedStorage = storage as typeof storage & {
-  enabled: boolean;
-  username: string;
-  displayName: string;
-  email: string;
-  phone: string;
-  bio: string;
-  avatar: string;
-  banner: string;
-  avatarDecoration: string;
-  premiumType: string | null;
-  badges: Record<string, boolean>;
-};
+const typedStorage = storage;
 
-const BADGES: Record<string, number> = {
+const BADGES = {
   staff: 1,
   partner: 2,
   hypesquad_events: 4,
@@ -33,7 +21,7 @@ const BADGES: Record<string, number> = {
   http_interactions: 8388608,
 };
 
-function calculateFlags(badges: Record<string, boolean>): number {
+function calculateFlags(badges) {
   let flags = 0;
   for (const [key, flag] of Object.entries(BADGES)) {
     if (badges[key] && flag > 0) flags |= flag;
@@ -41,7 +29,7 @@ function calculateFlags(badges: Record<string, boolean>): number {
   return flags;
 }
 
-function applyFakes(user: any) {
+function applyFakes(user) {
   if (!user || !typedStorage.enabled) return;
 
   if (typedStorage.username) user.username = typedStorage.username;
@@ -61,9 +49,9 @@ function applyFakes(user: any) {
   if (typedStorage.premiumType) user.premiumType = typedStorage.premiumType;
 }
 
-let origDispatch: any = null;
+let origDispatch = null;
 
-function onDispatch(e: any) {
+function onDispatch(e) {
   if (e && (e.type === "CURRENT_USER_UPDATE" || e.type === "CONNECTION_OPEN")) {
     if (e.user) applyFakes(e.user);
   }
@@ -86,7 +74,7 @@ export default {
 
     origDispatch = FluxDispatcher.dispatch.bind(FluxDispatcher);
     FluxDispatcher.dispatch = onDispatch;
-    logger.log("[LarpPlugin] Loaded and patching dispatch");
+    logger.log("[LarpPlugin] Loaded");
   },
 
   onUnload() {

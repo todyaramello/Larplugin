@@ -6,19 +6,7 @@ import { storage } from "@vendetta/plugin";
 const { ScrollView } = ReactNative;
 const { FormInput, FormSwitchRow, FormSection } = Forms;
 
-const typedStorage = storage as typeof storage & {
-  enabled: boolean;
-  username: string;
-  displayName: string;
-  email: string;
-  phone: string;
-  bio: string;
-  avatar: string;
-  banner: string;
-  avatarDecoration: string;
-  premiumType: string | null;
-  badges: Record<string, boolean>;
-};
+const typedStorage = storage;
 
 const BADGE_LIST = [
   { key: "staff", label: "Discord Staff" },
@@ -48,7 +36,7 @@ export default function Settings() {
         <FormSwitchRow
           label="Enable LarpPlugin"
           value={typedStorage.enabled}
-          onValueChange={(v: boolean) => (typedStorage.enabled = v)}
+          onValueChange={(v) => (typedStorage.enabled = v)}
         />
       </FormSection>
 
@@ -57,19 +45,19 @@ export default function Settings() {
           title="Fake Username"
           placeholder="Enter fake username"
           value={typedStorage.username}
-          onChange={(v: string) => (typedStorage.username = v)}
+          onChange={(v) => (typedStorage.username = v)}
         />
         <FormInput
           title="Fake Display Name"
           placeholder="Enter fake display name"
           value={typedStorage.displayName}
-          onChange={(v: string) => (typedStorage.displayName = v)}
+          onChange={(v) => (typedStorage.displayName = v)}
         />
         <FormInput
           title="Fake Bio"
           placeholder="Enter fake bio"
           value={typedStorage.bio}
-          onChange={(v: string) => (typedStorage.bio = v)}
+          onChange={(v) => (typedStorage.bio = v)}
         />
       </FormSection>
 
@@ -78,13 +66,13 @@ export default function Settings() {
           title="Fake Email"
           placeholder="Enter fake email"
           value={typedStorage.email}
-          onChange={(v: string) => (typedStorage.email = v)}
+          onChange={(v) => (typedStorage.email = v)}
         />
         <FormInput
           title="Fake Phone"
           placeholder="Enter fake phone number"
           value={typedStorage.phone}
-          onChange={(v: string) => (typedStorage.phone = v)}
+          onChange={(v) => (typedStorage.phone = v)}
         />
       </FormSection>
 
@@ -93,19 +81,19 @@ export default function Settings() {
           title="Fake Avatar URL"
           placeholder="https://example.com/avatar.png"
           value={typedStorage.avatar}
-          onChange={(v: string) => (typedStorage.avatar = v)}
+          onChange={(v) => (typedStorage.avatar = v)}
         />
         <FormInput
           title="Fake Banner URL"
           placeholder="https://example.com/banner.png"
           value={typedStorage.banner}
-          onChange={(v: string) => (typedStorage.banner = v)}
+          onChange={(v) => (typedStorage.banner = v)}
         />
         <FormInput
           title="Fake Avatar Decoration URL"
           placeholder="https://example.com/decoration.png"
           value={typedStorage.avatarDecoration}
-          onChange={(v: string) => (typedStorage.avatarDecoration = v)}
+          onChange={(v) => (typedStorage.avatarDecoration = v)}
         />
       </FormSection>
 
@@ -115,7 +103,7 @@ export default function Settings() {
             key={badge.key}
             label={badge.label}
             value={typedStorage.badges?.[badge.key] ?? false}
-            onValueChange={(v: boolean) => {
+            onValueChange={(v) => {
               if (!typedStorage.badges) typedStorage.badges = {};
               typedStorage.badges[badge.key] = v;
             }}
