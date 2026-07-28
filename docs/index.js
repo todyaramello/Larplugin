@@ -4,7 +4,9 @@ const{FluxDispatcher}=vendetta.metro.common
 const{Forms}=vendetta.ui.components
 const{React}=vendetta.metro.common
 const{useState}=React
-const{ScrollView,View}=vendetta.metro.common.ReactNative
+const RN=vendetta.metro.common.ReactNative
+const ScrollView=RN.ScrollView
+const View=RN.View||null
 const{FormInput,FormSwitchRow,FormSection}=Forms
 const h=React.createElement
 const findByStoreName=vendetta.metro.findByStoreName.bind(vendetta.metro)
@@ -36,7 +38,7 @@ const COLORS=["#FF0000","#FF6600","#FFAA00","#FFFF00","#88FF00","#00FF44","#00FF
 function ColorRow({val,set,storeKey}){
 const kids=[]
 for(const c of COLORS){
-kids.push(h(View,{key:c,style:{width:30,height:30,margin:3,borderRadius:15,backgroundColor:c,borderWidth:2,borderColor:val===c?"#fff":"rgba(255,255,255,0.15)"},onTouchEnd:function(e){e&&e.stopPropagation&&e.stopPropagation();set(c);s[storeKey]=c;refreshUser();setTimeout(refreshProfile,100)}}))
+kids.push(h(View,{key:c,style:{width:30,height:30,margin:3,borderRadius:15,backgroundColor:c,borderWidth:2,borderColor:val===c?"#fff":"rgba(255,255,255,0.15)"},onTouchEnd:function(ev){try{ev&&ev.stopPropagation&&ev.stopPropagation()}catch(ex){};set(c);s[storeKey]=c;refreshUser();setTimeout(refreshProfile,100)}}))
 }
 return h(View,{style:{flexDirection:"row",flexWrap:"wrap",paddingHorizontal:12,paddingBottom:8}},...kids)
 }
@@ -63,9 +65,9 @@ h(FormInput,{title:"Fake Display Name",placeholder:"Enter fake display name",val
 h(FormInput,{title:"Fake Bio",placeholder:"Enter fake bio",value:bi,onChange:function(v){setBi(v);s.bio=v;refreshUser()}}),
 h(FormInput,{title:"Fake Join Year",placeholder:"e.g. 2020 (random day/month)",value:jy,onChange:function(v){setJy(v);s.joinYear=v;refreshUser();setTimeout(refreshProfile,100)}}),
 h(FormInput,{title:"Profile Accent Color",placeholder:"e.g. #FF0000",value:ac,onChange:function(v){setAc(v);s.accent=v;refreshUser();setTimeout(refreshProfile,100)}}),
-typeof View!="undefined"?h(ColorRow,{val:ac,set:setAc,storeKey:"accent"}):null,
+View?h(ColorRow,{val:ac,set:setAc,storeKey:"accent"}):null,
 h(FormInput,{title:"Profile Accent Color 2 (gradient)",placeholder:"e.g. #00FF00",value:ac2,onChange:function(v){setAc2(v);s.accent2=v;refreshUser();setTimeout(refreshProfile,100)}}),
-typeof View!="undefined"?h(ColorRow,{val:ac2,set:setAc2,storeKey:"accent2"}):null),
+View?h(ColorRow,{val:ac2,set:setAc2,storeKey:"accent2"}):null),
 h(FormSection,{title:"Contact"},
 h(FormInput,{title:"Fake Email",placeholder:"Enter fake email",value:em,onChange:function(v){setEm(v);s.email=v;refreshUser()}}),
 h(FormInput,{title:"Fake Phone",placeholder:"Enter fake phone number",value:ph,onChange:function(v){setPh(v);s.phone=v;refreshUser()}})),
