@@ -1,143 +1,117 @@
 import { ReactNative as RN } from '@vendetta/metro/common'
 import { useProxy } from '@vendetta/storage'
-import { getAssetIDByName } from '@vendetta/ui/assets'
-import { Forms } from '@vendetta/ui/components'
 import { vstorage } from './index'
 import { BADGES } from './badges'
 
-const { FormSwitchRow, FormInput, FormRow } = Forms
+const { Text, TextInput, Switch, View, TouchableOpacity, ScrollView } = RN
+
+const styles = RN.StyleSheet.create({
+    container: { flex: 1, padding: 16 },
+    section: { marginBottom: 20 },
+    sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#fff', marginBottom: 8 },
+    row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#333' },
+    label: { color: '#fff', fontSize: 15 },
+    input: { backgroundColor: '#2a2a2a', borderRadius: 8, padding: 10, color: '#fff', fontSize: 15, marginTop: 4 },
+    badgeRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#333' },
+})
 
 export default () => {
     useProxy(vstorage)
 
     return (
-        <RN.ScrollView style={{ flex: 1 }}>
-            <FormRow
-                label="Enable Larping"
-                subLabel="Toggle all fake profile data on or off"
-                leading={<FormRow.Icon source={getAssetIDByName('ic_pencil')} />}
-                trailing={
-                    <FormSwitchRow
-                        value={vstorage.enabled}
-                        onValueChange={() => (vstorage.enabled = !vstorage.enabled)}
-                    />
-                }
-            />
-            <RN.View style={{ height: 12 }} />
-            <FormRow
-                label="Fake Username"
-                subLabel="Your fake username shown everywhere"
-                leading={<FormRow.Icon source={getAssetIDByName('ic_pencil')} />}
-            />
-            <FormInput
-                title=""
-                placeholder="Enter fake username"
-                value={vstorage.username}
-                onChange={(v: string) => (vstorage.username = v)}
-                style={{ marginTop: -25, marginHorizontal: 12 }}
-            />
-            <FormRow
-                label="Fake Display Name"
-                subLabel="Your fake display name"
-                leading={<FormRow.Icon source={getAssetIDByName('ic_pencil')} />}
-            />
-            <FormInput
-                title=""
-                placeholder="Enter fake display name"
-                value={vstorage.displayName}
-                onChange={(v: string) => (vstorage.displayName = v)}
-                style={{ marginTop: -25, marginHorizontal: 12 }}
-            />
-            <FormRow
-                label="Fake Email"
-                subLabel="Your fake email shown in settings"
-                leading={<FormRow.Icon source={getAssetIDByName('ic_pencil')} />}
-            />
-            <FormInput
-                title=""
-                placeholder="Enter fake email"
-                value={vstorage.email}
-                onChange={(v: string) => (vstorage.email = v)}
-                style={{ marginTop: -25, marginHorizontal: 12 }}
-            />
-            <FormRow
-                label="Fake Phone"
-                subLabel="Your fake phone number"
-                leading={<FormRow.Icon source={getAssetIDByName('ic_pencil')} />}
-            />
-            <FormInput
-                title=""
-                placeholder="Enter fake phone number"
-                value={vstorage.phone}
-                onChange={(v: string) => (vstorage.phone = v)}
-                style={{ marginTop: -25, marginHorizontal: 12 }}
-            />
-            <FormRow
-                label="Fake Bio"
-                subLabel="Your fake about me"
-                leading={<FormRow.Icon source={getAssetIDByName('ic_pencil')} />}
-            />
-            <FormInput
-                title=""
-                placeholder="Enter fake bio"
-                value={vstorage.bio}
-                onChange={(v: string) => (vstorage.bio = v)}
-                style={{ marginTop: -25, marginHorizontal: 12 }}
-            />
-            <FormRow
-                label="Fake Avatar URL"
-                subLabel="URL to your fake avatar image"
-                leading={<FormRow.Icon source={getAssetIDByName('ic_pencil')} />}
-            />
-            <FormInput
-                title=""
-                placeholder="https://example.com/avatar.png"
-                value={vstorage.avatar}
-                onChange={(v: string) => (vstorage.avatar = v)}
-                style={{ marginTop: -25, marginHorizontal: 12 }}
-            />
-            <FormRow
-                label="Fake Banner URL"
-                subLabel="URL to your fake banner image"
-                leading={<FormRow.Icon source={getAssetIDByName('ic_pencil')} />}
-            />
-            <FormInput
-                title=""
-                placeholder="https://example.com/banner.png"
-                value={vstorage.banner}
-                onChange={(v: string) => (vstorage.banner = v)}
-                style={{ marginTop: -25, marginHorizontal: 12 }}
-            />
-            <FormRow
-                label="Fake Avatar Decoration URL"
-                subLabel="URL to your fake avatar decoration"
-                leading={<FormRow.Icon source={getAssetIDByName('ic_pencil')} />}
-            />
-            <FormInput
-                title=""
-                placeholder="https://example.com/decoration.png"
-                value={vstorage.avatarDecoration}
-                onChange={(v: string) => (vstorage.avatarDecoration = v)}
-                style={{ marginTop: -25, marginHorizontal: 12 }}
-            />
-            <RN.View style={{ height: 20 }} />
-            <FormRow
-                label="Fake Badges"
-                subLabel="Select which fake badges to display"
-                leading={<FormRow.Icon source={getAssetIDByName('StaffBadgeIcon')} />}
-            />
-            {BADGES.map(badge => (
-                <FormSwitchRow
-                    key={badge.type}
-                    label={badge.label}
-                    value={vstorage.badges[badge.type] ?? false}
-                    onValueChange={() => {
-                        vstorage.badges[badge.type] = !vstorage.badges[badge.type]
-                    }}
-                    leading={<FormRow.Icon source={getAssetIDByName(badge.icon)} />}
+        <ScrollView style={styles.container}>
+            <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Profile</Text>
+                <Text style={styles.label}>Fake Username</Text>
+                <TextInput
+                    style={styles.input}
+                    placeholder="Enter fake username"
+                    placeholderTextColor="#666"
+                    value={vstorage.username}
+                    onChangeText={(v: string) => (vstorage.username = v)}
                 />
-            ))}
-            <RN.View style={{ height: 30 }} />
-        </RN.ScrollView>
+                <Text style={[styles.label, { marginTop: 12 }]}>Fake Display Name</Text>
+                <TextInput
+                    style={styles.input}
+                    placeholder="Enter fake display name"
+                    placeholderTextColor="#666"
+                    value={vstorage.displayName}
+                    onChangeText={(v: string) => (vstorage.displayName = v)}
+                />
+                <Text style={[styles.label, { marginTop: 12 }]}>Fake Bio</Text>
+                <TextInput
+                    style={styles.input}
+                    placeholder="Enter fake bio"
+                    placeholderTextColor="#666"
+                    value={vstorage.bio}
+                    onChangeText={(v: string) => (vstorage.bio = v)}
+                />
+            </View>
+
+            <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Contact</Text>
+                <Text style={styles.label}>Fake Email</Text>
+                <TextInput
+                    style={styles.input}
+                    placeholder="Enter fake email"
+                    placeholderTextColor="#666"
+                    value={vstorage.email}
+                    onChangeText={(v: string) => (vstorage.email = v)}
+                />
+                <Text style={[styles.label, { marginTop: 12 }]}>Fake Phone</Text>
+                <TextInput
+                    style={styles.input}
+                    placeholder="Enter fake phone number"
+                    placeholderTextColor="#666"
+                    value={vstorage.phone}
+                    onChangeText={(v: string) => (vstorage.phone = v)}
+                />
+            </View>
+
+            <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Media</Text>
+                <Text style={styles.label}>Fake Avatar URL</Text>
+                <TextInput
+                    style={styles.input}
+                    placeholder="https://example.com/avatar.png"
+                    placeholderTextColor="#666"
+                    value={vstorage.avatar}
+                    onChangeText={(v: string) => (vstorage.avatar = v)}
+                />
+                <Text style={[styles.label, { marginTop: 12 }]}>Fake Banner URL</Text>
+                <TextInput
+                    style={styles.input}
+                    placeholder="https://example.com/banner.png"
+                    placeholderTextColor="#666"
+                    value={vstorage.banner}
+                    onChangeText={(v: string) => (vstorage.banner = v)}
+                />
+                <Text style={[styles.label, { marginTop: 12 }]}>Fake Avatar Decoration URL</Text>
+                <TextInput
+                    style={styles.input}
+                    placeholder="https://example.com/decoration.png"
+                    placeholderTextColor="#666"
+                    value={vstorage.avatarDecoration}
+                    onChangeText={(v: string) => (vstorage.avatarDecoration = v)}
+                />
+            </View>
+
+            <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Badges</Text>
+                {BADGES.map(badge => (
+                    <View key={badge.type} style={styles.badgeRow}>
+                        <Text style={styles.label}>{badge.label}</Text>
+                        <Switch
+                            value={vstorage.badges[badge.type] ?? false}
+                            onValueChange={() => {
+                                vstorage.badges[badge.type] = !vstorage.badges[badge.type]
+                            }}
+                        />
+                    </View>
+                ))}
+            </View>
+
+            <View style={{ height: 40 }} />
+        </ScrollView>
     )
 }
