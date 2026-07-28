@@ -15,21 +15,31 @@ if (existsSync(outDir)) {
 
 await mkdir(outDir, { recursive: true })
 
+const vendettaMap = {
+    '@vendetta/plugin': 'vendetta',
+    '@vendetta/metro': 'vendetta.metro',
+    '@vendetta/metro/common': 'vendetta.metro.common',
+    '@vendetta/patcher': 'vendetta.patcher',
+    '@vendetta/storage': 'vendetta.storage',
+    '@vendetta/ui/components': 'vendetta.ui.components',
+    '@vendetta/ui/assets': 'vendetta.ui.assets',
+    '@vendetta/logger': 'vendetta.logger',
+}
+
 await build({
     entryPoints: [entryPoint],
     bundle: true,
     outfile: join(outDir, 'index.js'),
-    format: 'iife',
+    format: 'cjs',
     target: 'es2020',
     platform: 'browser',
     minify: true,
     sourcemap: false,
+    treeShaking: true,
     define: {
         'process.env.NODE_ENV': '"production"',
         'IS_DEV': 'false',
     },
-    treeShaking: true,
-    globalName: 'LarpPlugin',
     plugins: [
         {
             name: 'vendetta-resolve',
@@ -39,19 +49,25 @@ await build({
                     namespace: 'vendetta-ns',
                 }))
 
-                build.onLoad({ filter: /.*/, namespace: 'vendetta-ns' }, args => {
-                    const modPath = args.path.replace('@vendetta/', '')
-                    const globalRef = `window.vendetta.${modPath}`
-
-                    return {
-                        contents: `module.exports = ${globalRef};`,
-                        loader: 'js',
-                    }
-                })
+                build.onLoad({ filter: /.*/, namespace: 'vendetta-ns' }, args => ({
+                    contents: `module.exports = ${vendettaMap[args.path] || args.path};`,
+                    loader: 'js',
+                }))
             },
         },
     ],
 })
+
+let code = await readFile(join(outDir, 'index.js'), 'utf-8')
+
+code = `(function($__exp, vendetta) {
+var module = { exports: $__exp };
+var exports = $__exp;
+${code.replace(/module\.exports\s*=/g, '$__exp =')}
+return $__exp;
+})({},vendetta)`
+
+await writeFile(join(outDir, 'index.js'), code)
 
 const jsContent = await readFile(join(outDir, 'index.js'))
 const hash = createHash('sha256').update(jsContent).digest('hex')
@@ -73,6 +89,5 @@ const manifest = {
 }
 
 await writeFile(join(outDir, 'manifest.json'), JSON.stringify(manifest, null, 4))
-await writeFile(join(outDir, '.nojekyll'), '')
 
 console.log('Build successful! Output in build/revenge/')
