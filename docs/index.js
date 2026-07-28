@@ -7,6 +7,7 @@ const{useState}=React
 const RN=vendetta.metro.common.ReactNative
 const ScrollView=RN.ScrollView
 const View=RN.View||null
+const Text=RN.Text||null
 const{FormInput,FormSwitchRow,FormSection}=Forms
 const h=React.createElement
 const findByStoreName=vendetta.metro.findByStoreName.bind(vendetta.metro)
@@ -84,15 +85,14 @@ const checked=bd[b.key]||false
 return h(FormSwitchRow,{key:b.key,label:b.label,value:checked,onValueChange:function(v){const n={...bd};n[b.key]=v;setBd(n);s.badges=n;setTimeout(function(){refreshUser();refreshProfile()},0)}})
 })),
 h(FormSection,{title:"Profile Switcher"},
-h(FormInput,{title:"Preset Name",placeholder:"e.g. Admin, VIP, Mod",value:pn,onChange:function(v){setPn(v)}}),
-View?h(View,{style:{flexDirection:"row",paddingHorizontal:12,paddingBottom:8}},
-h(View,{style:{flex:1,backgroundColor:"rgba(255,255,255,0.1)",padding:8,borderRadius:8,marginRight:4},onTouchEnd:function(){savePreset(pn);setPn("");setPs(getPresetNames())}},h(React.Fragment,null,"Save")),
-h(View,{style:{flex:1,backgroundColor:"rgba(255,255,255,0.05)",padding:8,borderRadius:8},onTouchEnd:function(){setPn("");setPs(getPresetNames())}},h(React.Fragment,null,"Refresh"))
+View&&Text?h(View,{style:{flexDirection:"row",paddingHorizontal:12,paddingBottom:8}},
+h(View,{style:{flex:1,paddingVertical:12,paddingHorizontal:8,backgroundColor:"rgba(255,255,255,0.1)",borderRadius:8,marginRight:4,alignItems:"center"},onTouchEnd:function(){savePreset(pn);setPn("");setPs(getPresetNames())}},h(Text,{style:{color:"#fff",fontWeight:"600"}},"Save Preset")),
+h(View,{style:{flex:1,paddingVertical:12,paddingHorizontal:8,backgroundColor:"rgba(255,255,255,0.05)",borderRadius:8,marginLeft:4,alignItems:"center"},onTouchEnd:function(){setPn("");setPs(getPresetNames())}},h(Text,{style:{color:"#fff",fontWeight:"600"}},"Refresh"))
 ):null,
-ps.length?h(React.Fragment,null,...ps.map(function(n){
-return h(View,{key:n,style:{flexDirection:"row",paddingHorizontal:12,paddingBottom:4}},
-h(View,{style:{flex:1,backgroundColor:"rgba(255,255,255,0.05)",padding:8,borderRadius:8,marginRight:4},onTouchEnd:function(){loadPreset(n);refreshUser();setTimeout(refreshProfile,100);setPs(getPresetNames())}},h(React.Fragment,null,"Switch: "+n)),
-h(View,{style:{backgroundColor:"rgba(255,0,0,0.2)",padding:8,borderRadius:8},onTouchEnd:function(){deletePreset(n);setPs(getPresetNames())}},h(React.Fragment,null,"X"))
+ps.length&&Text?h(View,{style:{paddingHorizontal:12}},ps.map(function(n){
+return h(View,{key:n,style:{flexDirection:"row",marginBottom:4}},
+h(View,{style:{flex:1,paddingVertical:12,paddingHorizontal:12,backgroundColor:"rgba(255,255,255,0.06)",borderRadius:8,marginRight:4},onTouchEnd:function(){loadPreset(n);refreshUser();setTimeout(refreshProfile,100);setPs(getPresetNames())}},h(Text,{style:{color:"#fff"}},"\u21E8 "+n)),
+h(View,{style:{width:44,paddingVertical:12,backgroundColor:"rgba(255,0,0,0.15)",borderRadius:8,alignItems:"center"},onTouchEnd:function(){deletePreset(n);setPs(getPresetNames())}},h(Text,{style:{color:"#ff4444",fontWeight:"700"}},"\u2716"))
 )
 })):null),
 h(FormSection,{title:"Unlock"},
@@ -175,32 +175,38 @@ if(!store)return
 for(const k of Object.keys(store)){
 if(typeof store[k]!="function")continue
 const lbl=k.toLowerCase()
-if(!lbl.includes("decoration")&&!lbl.includes("deco")&&lbl!="canuse"&&lbl!="isunlocked"&&lbl!="getavatar")continue
+if(!lbl.includes("deco")&&!lbl.includes("inventory")&&!lbl.includes("premium")&&!lbl.includes("collectible")&&lbl!="canuse"&&!lbl.includes("unlock")&&!lbl.includes("owned")&&!lbl.includes("shop"))continue
 const orig=store[k]
-if(lbl=="canuse"||lbl=="canusedecoration"||lbl=="isunlocked"||lbl=="isdecorationunlocked"||lbl=="hashitem"){
+if(lbl.includes("canuse")||lbl.includes("unlock")||lbl.includes("owned")||lbl.includes("hasitem")||lbl.includes("haspurchased")){
 store[k]=function(){return true}
-}else if(lbl=="getdecorations"||lbl=="getavatardecorations"||lbl=="fetchdecorations"){
+}else if(lbl.includes("getall")||lbl.includes("fetch")||lbl.includes("inventory")||lbl.includes("collectibles")){
 store[k]=function(){
 const r=orig.apply(this,arguments)
-if(Array.isArray(r)){
-for(const item of r)if(item&&typeof item=="object"){item.unlocked=true;item.canUse=true;item.purchased=true}
+if(Array.isArray(r)){for(const item of r)if(item&&typeof item=="object"){item.unlocked=true;item.canUse=true;item.purchased=true;item.owned=true};return r}
+if(r&&typeof r=="object"){
+if(Array.isArray(r.decorations))for(const d of r.decorations)if(d&&typeof d=="object"){d.unlocked=true;d.canUse=true;d.purchased=true;d.owned=true}
+if(Array.isArray(r.collectibles))for(const d of r.collectibles)if(d&&typeof d=="object"){d.unlocked=true;d.canUse=true;d.purchased=true;d.owned=true}
+if(Array.isArray(r.items))for(const d of r.items)if(d&&typeof d=="object"){d.unlocked=true;d.canUse=true;d.purchased=true;d.owned=true}
 return r
 }
-if(r&&typeof r=="object"&&!Array.isArray(r)){
-if(typeof r.decorations!="undefined"){for(const d of(r.decorations||[]))if(d&&typeof d=="object"){d.unlocked=true;d.canUse=true;d.purchased=true}}
 return r
 }
+}else if(lbl.includes("decoration")||lbl.includes("deco")||lbl.includes("get")||lbl.includes("list")){
+store[k]=function(){
+const r=orig.apply(this,arguments)
+if(Array.isArray(r)){for(const item of r)if(item&&typeof item=="object"){item.unlocked=true;item.canUse=true;item.purchased=true;item.owned=true};return r}
 return r
 }
 }
 decoPatches.push(function(){store[k]=orig})
 }
 }
-const names=["AvatarDecorationStore","DecorationStore","DecorationInventoryStore","PremiumSubscriptionStore"]
-for(const n of names)tryPatch(findByStoreName(n))
-tryPatch(findByProps("canUseDecoration","getAvatarDecorations"))
-tryPatch(findByProps("canUseAvatarDecoration"))
-tryPatch(findByProps("isDecorationUnlocked"))
+const sn=["AvatarDecorationStore","DecorationStore","DecorationInventoryStore","PremiumSubscriptionStore","CollectiblesStore","ShopStore","InventoryStore"]
+for(const n of sn)tryPatch(findByStoreName(n))
+tryPatch(findByProps("canUseDecoration","getAvatarDecorations","getDecorations","fetchDecorations"))
+tryPatch(findByProps("canUseAvatarDecoration","getAllDecorations","getInventory"))
+tryPatch(findByProps("isDecorationUnlocked","getCollectibles"))
+tryPatch(findByProps("getPremium","getPremiumType","getPremiumTier"))
 }
 return{
 onLoad:function(){
