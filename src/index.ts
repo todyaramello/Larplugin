@@ -1,87 +1,101 @@
-import { storage } from "@vendetta/plugin"
-import { findByProps } from "@vendetta/metro"
-import { FluxDispatcher } from "@vendetta/metro/common"
-import Settings from "./Settings"
+import { FluxDispatcher } from "@vendetta/metro/common";
+import { storage } from "@vendetta/plugin";
+import { logger } from "@vendetta";
+import Settings from "./Settings";
 
-const FluxDispatcher_ = FluxDispatcher as any
+const typedStorage = storage as typeof storage & {
+  enabled: boolean;
+  username: string;
+  displayName: string;
+  email: string;
+  phone: string;
+  bio: string;
+  avatar: string;
+  banner: string;
+  avatarDecoration: string;
+  premiumType: string | null;
+  badges: Record<string, boolean>;
+};
 
-const BADGES: Record<string, { label: string; flag: number }> = {
-    staff: { label: "Discord Staff", flag: 1 },
-    partner: { label: "Partnered Server Owner", flag: 2 },
-    hypesquad_events: { label: "HypeSquad Events", flag: 4 },
-    bughunter_1: { label: "Bug Hunter Level 1", flag: 8 },
-    bughunter_2: { label: "Bug Hunter Level 2", flag: 16 },
-    hypesquad_bravery: { label: "HypeSquad Bravery", flag: 32 },
-    hypesquad_brilliance: { label: "HypeSquad Brilliance", flag: 64 },
-    hypesquad_balance: { label: "HypeSquad Balance", flag: 128 },
-    early_supporter: { label: "Early Supporter", flag: 256 },
-    verified_developer: { label: "Early Verified Bot Developer", flag: 512 },
-    certified_moderator: { label: "Discord Certified Moderator", flag: 262144 },
-    active_developer: { label: "Active Developer", flag: 4194304 },
-    http_interactions: { label: "HTTP Interactions", flag: 8388608 },
-}
+const BADGES: Record<string, number> = {
+  staff: 1,
+  partner: 2,
+  hypesquad_events: 4,
+  bughunter_1: 8,
+  bughunter_2: 16,
+  hypesquad_bravery: 32,
+  hypesquad_brilliance: 64,
+  hypesquad_balance: 128,
+  early_supporter: 256,
+  verified_developer: 512,
+  certified_moderator: 262144,
+  active_developer: 4194304,
+  http_interactions: 8388608,
+};
 
 function calculateFlags(badges: Record<string, boolean>): number {
-    let flags = 0
-    for (const [key, badge] of Object.entries(BADGES)) {
-        if (badges[key] && badge.flag > 0) {
-            flags |= badge.flag
-        }
-    }
-    return flags
+  let flags = 0;
+  for (const [key, flag] of Object.entries(BADGES)) {
+    if (badges[key] && flag > 0) flags |= flag;
+  }
+  return flags;
 }
 
 function applyFakes(user: any) {
-    if (!user || !storage.enabled) return
+  if (!user || !typedStorage.enabled) return;
 
-    if (storage.username) user.username = storage.username
-    if (storage.displayName) user.globalName = storage.displayName
-    if (storage.email) user.email = storage.email
-    if (storage.phone) user.phone = storage.phone
-    if (storage.bio) user.bio = storage.bio
-    if (storage.avatar) user.avatar = storage.avatar
-    if (storage.banner) user.banner = storage.banner
-    if (storage.avatarDecoration) user.avatarDecoration = storage.avatarDecoration
+  if (typedStorage.username) user.username = typedStorage.username;
+  if (typedStorage.displayName) user.globalName = typedStorage.displayName;
+  if (typedStorage.email) user.email = typedStorage.email;
+  if (typedStorage.phone) user.phone = typedStorage.phone;
+  if (typedStorage.bio) user.bio = typedStorage.bio;
+  if (typedStorage.avatar) user.avatar = typedStorage.avatar;
+  if (typedStorage.banner) user.banner = typedStorage.banner;
+  if (typedStorage.avatarDecoration) user.avatarDecoration = typedStorage.avatarDecoration;
 
-    const badgeFlags = calculateFlags(storage.badges ?? {})
-    if (badgeFlags > 0 || storage.badges?.nitro || storage.badges?.nitro_boost || storage.badges?.nitro_basic) {
-        user.flags = badgeFlags
-        user.publicFlags = badgeFlags
-    }
-    if (storage.premiumType) user.premiumType = storage.premiumType
+  const flags = calculateFlags(typedStorage.badges ?? {});
+  if (flags > 0 || typedStorage.badges?.nitro || typedStorage.badges?.nitro_boost || typedStorage.badges?.nitro_basic) {
+    user.flags = flags;
+    user.publicFlags = flags;
+  }
+  if (typedStorage.premiumType) user.premiumType = typedStorage.premiumType;
 }
 
-let origDispatch: any = null
+let origDispatch: any = null;
+
+function onDispatch(e: any) {
+  if (e && (e.type === "CURRENT_USER_UPDATE" || e.type === "CONNECTION_OPEN")) {
+    if (e.user) applyFakes(e.user);
+  }
+  return origDispatch(e);
+}
 
 export default {
-    onLoad() {
-        storage.enabled ??= true
-        storage.username ??= ""
-        storage.displayName ??= ""
-        storage.email ??= ""
-        storage.phone ??= ""
-        storage.bio ??= ""
-        storage.avatar ??= ""
-        storage.banner ??= ""
-        storage.avatarDecoration ??= ""
-        storage.premiumType ??= null
-        storage.badges ??= {}
+  onLoad() {
+    typedStorage.enabled ??= true;
+    typedStorage.username ??= "";
+    typedStorage.displayName ??= "";
+    typedStorage.email ??= "";
+    typedStorage.phone ??= "";
+    typedStorage.bio ??= "";
+    typedStorage.avatar ??= "";
+    typedStorage.banner ??= "";
+    typedStorage.avatarDecoration ??= "";
+    typedStorage.premiumType ??= null;
+    typedStorage.badges ??= {};
 
-        origDispatch = FluxDispatcher_.dispatch.bind(FluxDispatcher_)
-        FluxDispatcher_.dispatch = (e: any) => {
-            if (e && (e.type === "CURRENT_USER_UPDATE" || e.type === "CONNECTION_OPEN")) {
-                if (e.user) applyFakes(e.user)
-            }
-            return origDispatch(e)
-        }
-    },
+    origDispatch = FluxDispatcher.dispatch.bind(FluxDispatcher);
+    FluxDispatcher.dispatch = onDispatch;
+    logger.log("[LarpPlugin] Loaded and patching dispatch");
+  },
 
-    onUnload() {
-        if (origDispatch) {
-            FluxDispatcher_.dispatch = origDispatch
-            origDispatch = null
-        }
-    },
+  onUnload() {
+    if (origDispatch) {
+      FluxDispatcher.dispatch = origDispatch;
+      origDispatch = null;
+    }
+    logger.log("[LarpPlugin] Unloaded");
+  },
 
-    settings: Settings,
-}
+  settings: Settings,
+};
