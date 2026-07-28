@@ -81,7 +81,7 @@ const checked=bd[b.key]||false
 return h(FormSwitchRow,{key:b.key,label:b.label,value:checked,onValueChange:function(v){const n={...bd};n[b.key]=v;setBd(n);s.badges=n;setTimeout(function(){refreshUser();refreshProfile()},0)}})
 })),
 h(FormSection,{title:"Orbs"},
-h(FormInput,{title:"Fake Orb Balance",placeholder:"e.g. 1000",value:ob,onChange:function(v){setOb(v);s.orbBalance=v;refreshUser();setTimeout(refreshProfile,100);setTimeout(patchOrbStore,200)}}))
+h(FormInput,{title:"Fake Orb Balance",placeholder:"e.g. 1000",value:ob,onChange:function(v){setOb(v);s.orbBalance=v;refreshUser();setTimeout(refreshProfile,100)}}))
 }
 return{
 onLoad:function(){
@@ -124,31 +124,6 @@ const selfId=findByStoreName("UserStore")?.getCurrentUser()?.id
     }
 patches.push(function(){UPS.getUserProfile=op})
 }
-function patchOrbStore(){
-if(!s.enabled||!s.orbBalance)return
-const bal=parseInt(s.orbBalance)
-if(isNaN(bal))return
-for(const name of["QuestStore","OrbStore","OrbsStore"]){
-try{
-const store=findByStoreName(name)
-if(store)for(const k of Object.keys(store)){
-if(typeof store[k]=="function"&&k.toLowerCase().includes("orb")){
-const orig=store[k];store[k]=function(){return bal}
-patches.push(function(){store[k]=orig})
-}
-}
-}catch(e){}
-}
-try{
-const qs=findByProps("getOrbBalance","getOrbs","getOrbCount")
-if(qs)for(const k of Object.keys(qs)){
-if(typeof qs[k]=="function"&&(k.toLowerCase().includes("orb")||k.toLowerCase().includes("balance"))){
-const orig=qs[k];qs[k]=function(){return bal}
-patches.push(function(){qs[k]=orig})
-}
-}
-}catch(e){}
-}
 const SnowflakeUtils=findByProps("extractTimestamp","fromTimestamp")
 if(SnowflakeUtils){
 const origExt=SnowflakeUtils.extractTimestamp
@@ -161,7 +136,6 @@ patches.push(function(){SnowflakeUtils.extractTimestamp=origExt})
 }
 refreshUser()
 setTimeout(refreshProfile,500)
-setTimeout(patchOrbStore,1000)
 vendetta.logger.log("[LarpPlugin] Loaded")
 },
 onUnload:function(){
