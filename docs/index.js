@@ -1,16 +1,22 @@
 (function(d,vendetta){"use strict";
 
-var storage = vendetta.plugin.storage;
-var useProxy = vendetta.storage.useProxy;
-var findByProps = vendetta.metro.findByProps;
-var React = vendetta.metro.common.React;
-var ReactNative = vendetta.metro.common.ReactNative;
-var ScrollView = ReactNative.ScrollView;
-var View = ReactNative.View;
-var Text = ReactNative.Text;
-var TextInput = ReactNative.TextInput;
-var Switch = ReactNative.Switch;
-var StyleSheet = ReactNative.StyleSheet;
+var storage, useProxy, findByProps, React, ReactNative, ScrollView, View, Text, TextInput, Switch, StyleSheet;
+
+try {
+    storage = vendetta.plugin.storage;
+    useProxy = vendetta.storage.useProxy;
+    findByProps = vendetta.metro.findByProps;
+    React = vendetta.metro.common.React;
+    ReactNative = vendetta.metro.common.ReactNative;
+    ScrollView = ReactNative.ScrollView;
+    View = ReactNative.View;
+    Text = ReactNative.Text;
+    TextInput = ReactNative.TextInput;
+    Switch = ReactNative.Switch;
+    StyleSheet = ReactNative.StyleSheet;
+} catch(e) {
+    console.error("[LarpPlugin] Failed to init modules: " + e);
+}
 
 var BADGES = [
     { type: "staff", label: "Discord Staff", flag: 1 },
@@ -41,17 +47,20 @@ function calculateFlags(badges) {
     return flags;
 }
 
-var styles = StyleSheet.create({
-    container: { flex: 1, padding: 16 },
-    section: { marginBottom: 20 },
-    sectionTitle: { fontSize: 18, fontWeight: "bold", color: "#fff", marginBottom: 8 },
-    label: { color: "#fff", fontSize: 15 },
-    input: { backgroundColor: "#2a2a2a", borderRadius: 8, padding: 10, color: "#fff", fontSize: 15, marginTop: 4 },
-    badgeRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: "#333" }
-});
+var styles = null;
 
 function Settings() {
     useProxy(storage);
+    if (!styles) {
+        styles = StyleSheet.create({
+            container: { flex: 1, padding: 16 },
+            section: { marginBottom: 20 },
+            sectionTitle: { fontSize: 18, fontWeight: "bold", color: "#fff", marginBottom: 8 },
+            label: { color: "#fff", fontSize: 15 },
+            input: { backgroundColor: "#2a2a2a", borderRadius: 8, padding: 10, color: "#fff", fontSize: 15, marginTop: 4 },
+            badgeRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: "#333" }
+        });
+    }
     return React.createElement(ScrollView, { style: styles.container },
         React.createElement(View, { style: styles.section },
             React.createElement(Text, { style: styles.sectionTitle }, "Profile"),
