@@ -48,6 +48,10 @@ await build({
 
 await rm(join(outDir, 'raw.js'))
 
+let final = await readFile(join(outDir, 'index.js'), 'utf-8')
+final = final.replace(/^"use strict";\s*/, '')
+await writeFile(join(outDir, 'index.js'), final)
+
 const jsContent = await readFile(join(outDir, 'index.js'))
 const hash = createHash('sha256').update(jsContent).digest('hex')
 
