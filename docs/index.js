@@ -96,6 +96,16 @@ return p
 }
 patches.push(function(){UPS.getUserProfile=op})
 }
+const SnowflakeUtils=findByProps("extractTimestamp","fromTimestamp")
+if(SnowflakeUtils){
+const origExt=SnowflakeUtils.extractTimestamp
+const selfId=findByStoreName("UserStore")?.getCurrentUser()?.id
+SnowflakeUtils.extractTimestamp=function(sn){
+if(s.enabled&&s.joinDate&&selfId&&sn===selfId)return new Date(s.joinDate).getTime()
+return origExt.apply(this,arguments)
+}
+patches.push(function(){SnowflakeUtils.extractTimestamp=origExt})
+}
 refreshUser()
 setTimeout(refreshProfile,500)
 vendetta.logger.log("[LarpPlugin] Loaded")
