@@ -1,0 +1,5 @@
+<!DOCTYPE html><html><body>
+<h3>Find modules by property name (avoids findAll bug):</h3>
+<textarea id="t" rows="12" cols="85">(function(){var fp=vendetta.metro.findByProps;var r=[];function a(s){r.push(s)};var tryProps=[["showBuyModal","openBuyModal"],["startPurchase","startBuy"],["presentBuyPrompt","showPurchase"],["buy","purchase"],["PurchaseModal","BuyModal"],["openExternalLink","openURL"]];for(var i=0;i<tryProps.length;i++){try{var m=fp.apply(null,tryProps[i]);if(m){var fns=[];for(var k in m)if(typeof m[k]=="function")fns.push(k);a(tryProps[i].join(",")+" FOUND: "+fns.join(", "))}}catch(e){}};return r.join("\n")||"none found"})()</textarea>
+<br><button onclick="navigator.clipboard.writeText(document.getElementById('t').value)">Copy</button>
+</body></html>

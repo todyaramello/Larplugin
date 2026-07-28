@@ -15,7 +15,7 @@ const{findByProps}=vendetta.metro
 const BADGE_MAP={staff:["staff","Discord Staff","5e74e9b61934fc1f67c65515d1f7e60d",1],partner:["partner","Partnered Server Owner","3f9748e53446a137a052f3454e2de41e",2],hypesquad_events:["hypesquad_events","HypeSquad Events","bf01d1073931f921909045f3a39fd264",4],bughunter_1:["bughunter_1","Bug Hunter Level 1","2717692c7dca7289b35297368a940dd0",8],bughunter_2:["bughunter_2","Bug Hunter Level 2","848f79194d4be5ff5f81505cbd0ce1e6",16384],hypesquad_bravery:["hypesquad_bravery","HypeSquad Bravery","8a88d63823d8a71cd5e390baa45efa02",64],hypesquad_brilliance:["hypesquad_brilliance","HypeSquad Brilliance","011940fd013da3f7fb926e4a1cd2e618",128],hypesquad_balance:["hypesquad_balance","HypeSquad Balance","3aa41de486fa12454c3761e8e223442e",256],early_supporter:["early_supporter","Early Supporter","7060786766c9c840eb3019e725d2b358",512],verified_developer:["verified_developer","Early Verified Bot Developer","6df5892e0f35b051f8b61eace34f4967",131072],certified_moderator:["certified_moderator","Moderator Programs Alumni","fee1624003e2fee35cb398e125dc479b",262144],active_developer:["active_developer","Active Developer","6bdc42827a38498929a4920da12695d9",4194304],nitro:["premium","Nitro","2ba85e8026a8614b640c2837bcdfe21b",0],bronze:["premium_tenure_1_month_v2","Nitro Bronze (1mo)","4f33c4a9c64ce221936bd256c356f91f",0],silver:["premium_tenure_3_month_v2","Nitro Silver (3mo)","4514fab914bdbfb4ad2fa23df76121a6",0],gold:["premium_tenure_6_month_v2","Nitro Gold (6mo)","2895086c18d5531d499862e41d1155a6",0],platinum:["premium_tenure_12_month_v2","Nitro Platinum (1yr)","0334688279c8359120922938dcb1d6f8",0],diamond:["premium_tenure_24_month_v2","Nitro Diamond (2yr)","0d61871f72bb9a33a7ae568c1fb4f20a",0],emerald:["premium_tenure_36_month_v2","Nitro Emerald (3yr)","11e2d339068b55d3a506cff34d3780f3",0],ruby:["premium_tenure_60_month_v2","Nitro Ruby (5yr)","cd5e2cfd9d7f27a8cdcd3e8a8d5dc9f4",0],opal:["premium_tenure_72_month_v2","Nitro Opal (6yr+)","5b154df19c53dce2af92c9b61e6be5e2",0],orb:["orb_profile_badge","Collected the Orb Profile Badge","83d8a1eb09a8d64e59233eec5d4d5c2d",0],booster:["guild_booster_lvl1","Server Booster","51040c70d4f20a921ad6674ff86fc95c",0]}
 function calculateFlags(){let flags=0;for(const[k,[id,desc,icon,f]]of Object.entries(BADGE_MAP)){if(s.badges?.[k]&&f>0)flags|=f}return flags}
 function getFakeBadges(){const r=[];for(const[k,[id,desc,icon]]of Object.entries(BADGE_MAP)){if(s.badges?.[k])r.push({id,description:desc,icon})}return r}
-function applyFakes(user){if(!user||!s.enabled)return user;user.premiumType=2;user.premiumFlags=7;if(s.orbBalance){const n=parseInt(s.orbBalance);if(!isNaN(n))user.orbBalance=n};if(s.username)user.username=s.username;if(s.displayName)user.globalName=s.displayName;if(s.email)user.email=s.email;if(s.phone)user.phone=s.phone;if(s.bio)user.bio=s.bio;if(s.avatar)user.avatar=s.avatar;if(s.banner)user.banner=s.banner;if(s.avatarDecoration)user.avatarDecoration=s.avatarDecoration;if(s.joinYear){const d=new Date(parseInt(s.joinYear),Math.floor(Math.random()*12),Math.floor(Math.random()*28)+1).getTime();user.createdAt=d;user.timestamp=d};if(s.accent||s.accent2){const n1=s.accent?parseInt(s.accent.replace("#",""),16):0;const n2=s.accent2?parseInt(s.accent2.replace("#",""),16):0;const ok1=!isNaN(n1)&&s.accent;const ok2=!isNaN(n2)&&s.accent2;if(ok1)user.accentColor=n1;if(ok1||ok2)user.themeColors=[ok1?n1:n2,ok2?n2:n1]};const flags=calculateFlags();if(flags>0){user.flags=flags;user.publicFlags=flags};return user}
+function applyFakes(user){if(!user||!s.enabled)return user;user.premiumType=2;user.premiumFlags=7;if(s.orbBalance){const n=parseInt(s.orbBalance);if(!isNaN(n))user.orbBalance=n};if(s.username)user.username=s.username;if(s.displayName)user.globalName=s.displayName;if(s.email)user.email=s.email;if(s.phone)user.phone=s.phone;if(s.bio)user.bio=s.bio;if(s.avatar)user.avatar=s.avatar;if(s.banner)user.banner=s.banner;if(s.avatarDecoration&&s.avatarDecoration.startsWith("a_"))user.avatarDecorationData={asset:s.avatarDecoration,skuId:"1",expiresAt:null};if(s.joinYear){const d=new Date(parseInt(s.joinYear),Math.floor(Math.random()*12),Math.floor(Math.random()*28)+1).getTime();user.createdAt=d;user.timestamp=d};if(s.accent||s.accent2){const n1=s.accent?parseInt(s.accent.replace("#",""),16):0;const n2=s.accent2?parseInt(s.accent2.replace("#",""),16):0;const ok1=!isNaN(n1)&&s.accent;const ok2=!isNaN(n2)&&s.accent2;if(ok1)user.accentColor=n1;if(ok1||ok2)user.themeColors=[ok1?n1:n2,ok2?n2:n1]};const flags=calculateFlags();if(flags>0){user.flags=flags;user.publicFlags=flags};return user}
 function refreshUser(){
 const UserStore=findByStoreName("UserStore")
 const raw=UserStore?.getCurrentUser?.()
@@ -61,7 +61,6 @@ const[ob,setOb]=useState(s.orbBalance||"")
 const[pn,setPn]=useState("")
 const[ps,setPs]=useState(getPresetNames())
 const[bd,setBd]=useState(s.badges||{})
-const[du,setDu]=useState(s.decosUnlocked||false)
 return h(ScrollView,{style:{paddingBottom:24}},
 h(FormSection,{title:"Toggle"},h(FormSwitchRow,{label:"Enable LarpPlugin",value:e,onValueChange:function(v){setE(v);s.enabled=v;refreshUser();setTimeout(refreshProfile,100)}})),
 h(FormSection,{title:"Profile"},
@@ -78,8 +77,10 @@ h(FormInput,{title:"Fake Email",placeholder:"Enter fake email",value:em,onChange
 h(FormInput,{title:"Fake Phone",placeholder:"Enter fake phone number",value:ph,onChange:function(v){setPh(v);s.phone=v;refreshUser()}})),
 h(FormSection,{title:"Media (URLs - upload to a CDN first)"},
 h(FormInput,{title:"Fake Avatar URL",placeholder:"https://i.imgur.com/...png",value:av,onChange:function(v){setAv(v);s.avatar=v;refreshUser()}}),
-h(FormInput,{title:"Fake Banner URL",placeholder:"https://i.imgur.com/...png",value:ba,onChange:function(v){setBa(v);s.banner=v;refreshUser()}}),
-h(FormInput,{title:"Fake Avatar Decoration URL",placeholder:"https://cdn.discord...",value:ad,onChange:function(v){setAd(v);s.avatarDecoration=v;refreshUser()}})),
+h(FormInput,{title:"Fake Banner URL",placeholder:"https://i.imgur.com/...png",value:ba,onChange:function(v){setBa(v);s.banner=v;refreshUser()}})),
+h(FormSection,{title:"Avatar Decoration"},
+h(FormInput,{title:"Custom Asset Hash",placeholder:"a_... (or select a preset below)",value:ad,onChange:function(v){setAd(v);s.avatarDecoration=v;refreshUser();setTimeout(refreshProfile,100)}}),
+View?h(View,{style:{flexDirection:"row",flexWrap:"wrap",paddingHorizontal:12,paddingBottom:8}},[["None","",0],["Sample 1","a_1269e74af4df7417b13759eae50c83dc",1],["Sample 2","a_e132d6014f2075d9fc2a8ece507ef5cf",2]].map(function(p){return h(View,{key:p[2],style:{paddingHorizontal:12,paddingVertical:8,margin:4,backgroundColor:"#2f3136",borderRadius:8},onTouchEnd:function(){setAd(p[1]);s.avatarDecoration=p[1];refreshUser();setTimeout(refreshProfile,100)}},h(Text,{style:{color:"#b9bbbe",fontSize:13}},p[0]))})):null),
 h(FormSection,{title:"Badges"},BADGE_LIST.map(function(b){
 const checked=bd[b.key]||false
 return h(FormSwitchRow,{key:b.key,label:b.label,value:checked,onValueChange:function(v){const n={...bd};n[b.key]=v;setBd(n);s.badges=n;setTimeout(function(){refreshUser();refreshProfile()},0)}})
@@ -96,8 +97,6 @@ h(View,{style:{flex:1,height:44,paddingHorizontal:12,backgroundColor:"#2f3136",b
 h(View,{style:{width:44,height:44,backgroundColor:"#ed4245",borderRadius:8,alignItems:"center",justifyContent:"center"},onTouchEnd:function(){deletePreset(n);setPs(getPresetNames())}},h(Text,{style:{color:"#fff",fontSize:16,fontWeight:"700"}},"X"))
 )
 })):null),
-h(FormSection,{title:"Unlock"},
-h(FormSwitchRow,{label:"Unlock All Decorations",value:du,onValueChange:function(v){setDu(v);s.decosUnlocked=v;if(v)setTimeout(patchDecorations,200)}})),
 h(FormSection,{title:"Orbs"},
 h(FormInput,{title:"Fake Orb Balance",placeholder:"e.g. 1000",value:ob,onChange:function(v){setOb(v);s.orbBalance=v;refreshUser();setTimeout(refreshProfile,100);setTimeout(patchOrbStore,200)}})))
 }
@@ -166,53 +165,6 @@ const presets=s.presets||{}
 delete presets[name];s.presets=presets
 }
 function getPresetNames(){return Object.keys(s.presets||{})}
-let decoPatches=[]
-function patchDecorations(){
-if(!s.enabled)return
-for(const p of decoPatches)try{p()}catch(e){}
-decoPatches=[]
-function tryPatchFn(props,key,fn){
-try{
-const m=findByProps(...props)
-if(m&&typeof m[key]=="function"){const o=m[key];m[key]=fn;decoPatches.push(function(){m[key]=o})}
-}catch(e){}
-}
-tryPatchFn(["isAvatarDecorationExpired","parseAvatarDecorationData"],"isAvatarDecorationExpired",function(){return false})
-
-// parseAvatarDecorationData: wrap to add owned=true
-try{
-const m=findByProps("parseAvatarDecorationData","isAvatarDecorationExpired")
-if(m&&typeof m.parseAvatarDecorationData=="function"){
-const orig=m.parseAvatarDecorationData
-m.parseAvatarDecorationData=function(){try{const r=orig.apply(this,arguments);if(Array.isArray(r))for(const d of r)if(d&&typeof d=="object"){d.owned=true;d.unlocked=true;d.canUse=true;d.locked=false;d.available=true;d.purchased=true;d.requirePurchase=false;d.isPurchased=true};return r}catch(e){try{return orig.apply(this,arguments)}catch(e2){return arguments[0]||[]}}}
-decoPatches.push(function(){m.parseAvatarDecorationData=orig})
-}
-}catch(e){}
-// getPurchaseDisplayInfo: wrap to add isPurchased=true
-try{
-const m=findByProps("getPurchaseDisplayInfo","getAvatarDecorationPreviewUrl")
-if(m&&typeof m.getPurchaseDisplayInfo=="function"){
-const orig=m.getPurchaseDisplayInfo
-m.getPurchaseDisplayInfo=function(){try{const r=orig.apply(this,arguments);if(r&&typeof r=="object"){r.isPurchased=true;r.owned=true;r.isSubscription=false};return r}catch(e){try{return orig.apply(this,arguments)}catch(e2){return arguments[0]||{isPurchased:true}}}}
-decoPatches.push(function(){m.getPurchaseDisplayInfo=orig})
-}
-}catch(e){}
-// EntitlementStore: patch ALL methods to indicate everything owned
-try{
-const s=findByStoreName("EntitlementStore")
-if(s){
-const methods={}
-if(typeof s.isEntitledToSku=="function"){methods.isEntitledToSku=s.isEntitledToSku;s.isEntitledToSku=function(){return true}}
-if(typeof s.getForSku=="function"){methods.getForSku=s.getForSku;s.getForSku=function(){try{return methods.getForSku.apply(this,arguments)||[{id:"1",skuId:arguments[0]||"1",consumed:false,gift:false}]}catch(e){return[{id:"1",skuId:arguments[0]||"1",consumed:false,gift:false}]}}}
-if(typeof s.get=="function"){methods.get=s.get;s.get=function(){try{return methods.get.apply(this,arguments)||{}}catch(e){return{}}}}
-if(typeof s.getForSubscription=="function"){methods.getForSubscription=s.getForSubscription;s.getForSubscription=function(){try{return methods.getForSubscription.apply(this,arguments)||[]}catch(e){return[]}}}
-if(typeof s.hasFetchedForApplicationIds=="function"){methods.hasFetchedForApplicationIds=s.hasFetchedForApplicationIds;s.hasFetchedForApplicationIds=function(){return true}}
-if(typeof s.isFractionalPremiumActive=="function"){methods.isFractionalPremiumActive=s.isFractionalPremiumActive;s.isFractionalPremiumActive=function(){return true}}
-if(typeof s.getGiftable=="function"){methods.getGiftable=s.getGiftable;s.getGiftable=function(){try{return methods.getGiftable.apply(this,arguments)||[{gift:false,consumed:false}]}catch(e){return[{gift:false,consumed:false}]}}}
-decoPatches.push(function(){for(const k in methods)s[k]=methods[k]})
-}
-}catch(e){}}
-}
 return{
 onLoad:function(){
 s.enabled=s.enabled===undefined?true:s.enabled
@@ -240,6 +192,7 @@ const selfId=findByStoreName("UserStore")?.getCurrentUser()?.id
         c.badges=getFakeBadges()
         c.premiumType=2;c.premiumFlags=7
         if(s.orbBalance){const n=parseInt(s.orbBalance);if(!isNaN(n))c.orbBalance=n}
+if(s.avatarDecoration&&s.avatarDecoration.startsWith("a_"))c.avatarDecorationData={asset:s.avatarDecoration,skuId:"1",expiresAt:null}
         if(s.accent||s.accent2){
           const n1=s.accent?parseInt(s.accent.replace("#",""),16):0
           const n2=s.accent2?parseInt(s.accent2.replace("#",""),16):0
@@ -267,7 +220,6 @@ patches.push(function(){SnowflakeUtils.extractTimestamp=origExt})
 refreshUser()
 setTimeout(refreshProfile,500)
 setTimeout(patchOrbStore,1000)
-if(s.decosUnlocked)setTimeout(patchDecorations,1500)
 vendetta.logger.log("[LarpPlugin] Loaded")
 },
 onUnload:function(){
