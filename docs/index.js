@@ -57,7 +57,10 @@ const[jy,setJy]=useState(s.joinYear||"")
 const[ac,setAc]=useState(s.accent||"")
 const[ac2,setAc2]=useState(s.accent2||"")
 const[ob,setOb]=useState(s.orbBalance||"")
+const[pn,setPn]=useState("")
+const[ps,setPs]=useState(getPresetNames())
 const[bd,setBd]=useState(s.badges||{})
+const[du,setDu]=useState(s.decosUnlocked||false)
 return h(ScrollView,{style:{paddingBottom:24}},
 h(FormSection,{title:"Toggle"},h(FormSwitchRow,{label:"Enable LarpPlugin",value:e,onValueChange:function(v){setE(v);s.enabled=v;refreshUser();setTimeout(refreshProfile,100)}})),
 h(FormSection,{title:"Profile"},
@@ -80,6 +83,20 @@ h(FormSection,{title:"Badges"},BADGE_LIST.map(function(b){
 const checked=bd[b.key]||false
 return h(FormSwitchRow,{key:b.key,label:b.label,value:checked,onValueChange:function(v){const n={...bd};n[b.key]=v;setBd(n);s.badges=n;setTimeout(function(){refreshUser();refreshProfile()},0)}})
 })),
+h(FormSection,{title:"Profile Switcher"},
+h(FormInput,{title:"Preset Name",placeholder:"e.g. Admin, VIP, Mod",value:pn,onChange:function(v){setPn(v)}}),
+View?h(View,{style:{flexDirection:"row",paddingHorizontal:12,paddingBottom:8}},
+h(View,{style:{flex:1,backgroundColor:"rgba(255,255,255,0.1)",padding:8,borderRadius:8,marginRight:4},onTouchEnd:function(){savePreset(pn);setPn("");setPs(getPresetNames())}},h(React.Fragment,null,"Save")),
+h(View,{style:{flex:1,backgroundColor:"rgba(255,255,255,0.05)",padding:8,borderRadius:8},onTouchEnd:function(){setPn("");setPs(getPresetNames())}},h(React.Fragment,null,"Refresh"))
+):null,
+ps.length?h(React.Fragment,null,...ps.map(function(n){
+return h(View,{key:n,style:{flexDirection:"row",paddingHorizontal:12,paddingBottom:4}},
+h(View,{style:{flex:1,backgroundColor:"rgba(255,255,255,0.05)",padding:8,borderRadius:8,marginRight:4},onTouchEnd:function(){loadPreset(n);refreshUser();setTimeout(refreshProfile,100);setPs(getPresetNames())}},h(React.Fragment,null,"Switch: "+n)),
+h(View,{style:{backgroundColor:"rgba(255,0,0,0.2)",padding:8,borderRadius:8},onTouchEnd:function(){deletePreset(n);setPs(getPresetNames())}},h(React.Fragment,null,"X"))
+)
+})):null),
+h(FormSection,{title:"Unlock"},
+h(FormSwitchRow,{label:"Unlock All Decorations",value:du,onValueChange:function(v){setDu(v);s.decosUnlocked=v;if(v)setTimeout(patchDecorations,200)}})),
 h(FormSection,{title:"Orbs"},
 h(FormInput,{title:"Fake Orb Balance",placeholder:"e.g. 1000",value:ob,onChange:function(v){setOb(v);s.orbBalance=v;refreshUser();setTimeout(refreshProfile,100);setTimeout(patchOrbStore,200)}})))
 }
@@ -118,6 +135,72 @@ orbPatches.push(function(){store[k]=orig})
 }
 for(const n of["QuestStore","OrbStore","OrbsStore"])tryPatch(findByStoreName(n))
 tryPatch(findByProps("getOrbBalance","getOrbs","getOrbCount","getQuests"))
+}
+function loadSettings(obj){
+if(!obj)return
+for(const k of Object.keys(obj)){
+if(k=="badges"||k=="presets")continue
+if(typeof obj[k]=="string"||typeof obj[k]=="number"||typeof obj[k]=="boolean"){s[k]=obj[k]}
+}
+if(obj.badges){const b={};for(const kb of Object.keys(obj.badges))b[kb]=true;s.badges=b}
+}
+function savePreset(name){
+if(!name||!name.trim())return
+const preset={}
+const keys=["username","displayName","email","phone","bio","avatar","banner","avatarDecoration","joinYear","accent","accent2","orbBalance"]
+for(const k of keys)preset[k]=s[k]
+preset.badges={};for(const k of Object.keys(s.badges||{}))if(s.badges[k])preset.badges[k]=true
+const presets=s.presets||{}
+presets[name.trim()]=preset
+s.presets=presets
+}
+function loadPreset(name){
+const presets=s.presets||{}
+const p=presets[name]
+if(!p)return
+loadSettings(p)
+}
+function deletePreset(name){
+const presets=s.presets||{}
+delete presets[name];s.presets=presets
+}
+function getPresetNames(){return Object.keys(s.presets||{})}
+let decoPatches=[]
+function patchDecorations(){
+if(!s.enabled)return
+for(const p of decoPatches)try{p()}catch(e){}
+decoPatches=[]
+function tryPatch(store){
+if(!store)return
+for(const k of Object.keys(store)){
+if(typeof store[k]!="function")continue
+const lbl=k.toLowerCase()
+if(!lbl.includes("decoration")&&!lbl.includes("deco")&&lbl!="canuse"&&lbl!="isunlocked"&&lbl!="getavatar")continue
+const orig=store[k]
+if(lbl=="canuse"||lbl=="canusedecoration"||lbl=="isunlocked"||lbl=="isdecorationunlocked"||lbl=="hashitem"){
+store[k]=function(){return true}
+}else if(lbl=="getdecorations"||lbl=="getavatardecorations"||lbl=="fetchdecorations"){
+store[k]=function(){
+const r=orig.apply(this,arguments)
+if(Array.isArray(r)){
+for(const item of r)if(item&&typeof item=="object"){item.unlocked=true;item.canUse=true;item.purchased=true}
+return r
+}
+if(r&&typeof r=="object"&&!Array.isArray(r)){
+if(typeof r.decorations!="undefined"){for(const d of(r.decorations||[]))if(d&&typeof d=="object"){d.unlocked=true;d.canUse=true;d.purchased=true}}
+return r
+}
+return r
+}
+}
+decoPatches.push(function(){store[k]=orig})
+}
+}
+const names=["AvatarDecorationStore","DecorationStore","DecorationInventoryStore","PremiumSubscriptionStore"]
+for(const n of names)tryPatch(findByStoreName(n))
+tryPatch(findByProps("canUseDecoration","getAvatarDecorations"))
+tryPatch(findByProps("canUseAvatarDecoration"))
+tryPatch(findByProps("isDecorationUnlocked"))
 }
 return{
 onLoad:function(){
@@ -173,6 +256,7 @@ patches.push(function(){SnowflakeUtils.extractTimestamp=origExt})
 refreshUser()
 setTimeout(refreshProfile,500)
 setTimeout(patchOrbStore,1000)
+if(s.decosUnlocked)setTimeout(patchDecorations,1500)
 vendetta.logger.log("[LarpPlugin] Loaded")
 },
 onUnload:function(){
