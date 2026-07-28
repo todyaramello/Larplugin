@@ -22,15 +22,7 @@ applyFakes(clone)
 FluxDispatcher.dispatch({type:"CURRENT_USER_UPDATE",user:clone})
 }
 function refreshProfile(){
-const selfId=findByStoreName("UserStore")?.getCurrentUser()?.id
-if(!selfId)return
-const UPS=findByProps("getUserProfile","getGuildMemberProfile")
-if(!UPS||typeof UPS.getUserProfile!=="function")return
-const raw=UPS.getUserProfile(selfId)
-if(!raw)return
-const clone={...raw}
-clone.badges=getFakeBadges()
-if(s.joinYear){const d=new Date(parseInt(s.joinYear),Math.floor(Math.random()*12),Math.floor(Math.random()*28)+1).getTime();clone.joinedAt=d;clone.createdAt=d};if(s.accent||s.accent2){const n1=s.accent?parseInt(s.accent.replace("#",""),16):0;const n2=s.accent2?parseInt(s.accent2.replace("#",""),16):0;const valid1=!isNaN(n1)&&s.accent;const valid2=!isNaN(n2)&&s.accent2;if(valid1)clone.accentColor=n1;if(valid1||valid2)clone.themeColors=[valid1?n1:n2,valid2?n2:n1]}FluxDispatcher.dispatch({type:"USER_PROFILE_UPDATE",userProfile:clone})
+try{FluxDispatcher.dispatch({type:"CURRENT_USER_UPDATE",user:findByStoreName("UserStore")?.getCurrentUser()})}catch(e){}
 }
 let patches=[]
 const BADGE_LIST=[{key:"staff",label:"Discord Staff"},{key:"partner",label:"Partnered Server Owner"},{key:"hypesquad_events",label:"HypeSquad Events"},{key:"bughunter_1",label:"Bug Hunter Level 1"},{key:"bughunter_2",label:"Bug Hunter Level 2"},{key:"hypesquad_bravery",label:"HypeSquad Bravery"},{key:"hypesquad_brilliance",label:"HypeSquad Brilliance"},{key:"hypesquad_balance",label:"HypeSquad Balance"},{key:"early_supporter",label:"Early Supporter"},{key:"verified_developer",label:"Early Verified Bot Developer"},{key:"certified_moderator",label:"Discord Certified Moderator"},{key:"active_developer",label:"Active Developer"},{key:"nitro",label:"Nitro"},{key:"nitro_1y",label:"Nitro 1 Year"},{key:"booster",label:"Server Booster"}]
@@ -89,15 +81,23 @@ const UPS=findByProps("getUserProfile","getGuildMemberProfile")
 if(UPS&&typeof UPS.getUserProfile==="function"){
 const op=UPS.getUserProfile
 const selfId=findByStoreName("UserStore")?.getCurrentUser()?.id
-UPS.getUserProfile=function(id){
-const p=op.apply(this,arguments)
-if(p&&s.enabled&&selfId&&id===selfId){
-const c={...p}
-c.badges=getFakeBadges()
-return c
-}
-return p
-}
+    UPS.getUserProfile=function(id){
+      const p=op.apply(this,arguments)
+      if(p&&s.enabled&&selfId&&id===selfId){
+        const c={...p}
+        c.badges=getFakeBadges()
+        if(s.accent||s.accent2){
+          const n1=s.accent?parseInt(s.accent.replace("#",""),16):0
+          const n2=s.accent2?parseInt(s.accent2.replace("#",""),16):0
+          const ok1=!isNaN(n1)&&s.accent
+          const ok2=!isNaN(n2)&&s.accent2
+          if(ok1)c.accentColor=n1
+          if(ok1||ok2)c.themeColors=[ok1?n1:n2,ok2?n2:n1]
+        }
+        return c
+      }
+      return p
+    }
 patches.push(function(){UPS.getUserProfile=op})
 }
 const SnowflakeUtils=findByProps("extractTimestamp","fromTimestamp")
