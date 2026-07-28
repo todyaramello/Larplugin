@@ -7,7 +7,7 @@ import { createHash } from 'crypto'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const outDir = join(__dirname, '..', 'build', 'revenge')
-const entryPoint = join(__dirname, '..', 'src', 'plugin.tsx')
+const sourceFile = join(__dirname, '..', 'src', 'plugin.raw.js')
 
 if (existsSync(outDir)) {
     await rm(outDir, { recursive: true })
@@ -15,27 +15,17 @@ if (existsSync(outDir)) {
 
 await mkdir(outDir, { recursive: true })
 
-await build({
-    entryPoints: [entryPoint],
-    outfile: join(outDir, 'raw.js'),
-    bundle: false,
-    target: 'es2020',
-    platform: 'neutral',
-    minify: false,
-    sourcemap: false,
-    define: {
-        'process.env.NODE_ENV': '"production"',
-    },
-    loader: { '.tsx': 'tsx' },
-})
+let source = await readFile(sourceFile, 'utf-8')
 
-let code = await readFile(join(outDir, 'raw.js'), 'utf-8')
+const wrapped = `(function(d,vendetta){"use strict";
+var i = vendetta.plugin, n = vendetta, c = vendetta.metro.common, m = vendetta.metro, s = vendetta.storage;
+${source}
+initModules(vendetta);
+d.default={onLoad:onLoad,onUnload:onUnload,settings:Settings};
+Object.defineProperty(d,"__esModule",{value:!0});
+return d})({},vendetta)`
 
-code = code.replace(/^"use strict";\s*/, '')
-
-code = `(function(d,vendetta){"use strict";${code}d.default={onLoad:onLoad,onUnload:onUnload,settings:settings};Object.defineProperty(d,"__esModule",{value:!0});return d})({},vendetta)`
-
-await writeFile(join(outDir, 'raw.js'), code)
+await writeFile(join(outDir, 'raw.js'), wrapped)
 
 await build({
     entryPoints: [join(outDir, 'raw.js')],
