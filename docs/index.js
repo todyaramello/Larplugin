@@ -39,7 +39,7 @@ const COLORS=["#FF0000","#FF6600","#FFAA00","#FFFF00","#88FF00","#00FF44","#00FF
 function ColorRow({val,set,storeKey}){
 const kids=[]
 COLORS.forEach(function(c){
-kids.push(h(View,{key:c,style:{width:30,height:30,margin:3,borderRadius:15,backgroundColor:c,borderWidth:2,borderColor:val===c?"#fff":"rgba(255,255,255,0.15)"},onTouchEnd:function(){set(c);s[storeKey]=c;refreshUser();setTimeout(refreshProfile,100)},onResponderGrant:function(){set(c);s[storeKey]=c;refreshUser();setTimeout(refreshProfile,100)},onStartShouldSetResponder:function(){return true}}))
+kids.push(h(View,{key:c,style:{width:36,height:36,margin:4,borderRadius:18,backgroundColor:c,borderWidth:2,borderColor:val===c?"#fff":"rgba(255,255,255,0.15)"},onTouchEnd:function(){set(c);s[storeKey]=c;refreshUser();setTimeout(refreshProfile,100)},onResponderGrant:function(){set(c);s[storeKey]=c;refreshUser();setTimeout(refreshProfile,100)},onStartShouldSetResponder:function(){return true}}))
 })
 return h(View,{style:{flexDirection:"row",flexWrap:"wrap",paddingHorizontal:12,paddingBottom:8}},...kids)
 }
@@ -84,15 +84,16 @@ h(FormSection,{title:"Badges"},BADGE_LIST.map(function(b){
 const checked=bd[b.key]||false
 return h(FormSwitchRow,{key:b.key,label:b.label,value:checked,onValueChange:function(v){const n={...bd};n[b.key]=v;setBd(n);s.badges=n;setTimeout(function(){refreshUser();refreshProfile()},0)}})
 })),
-h(FormSection,{title:"Profile Switcher"},
+h(FormSection,{title:"Profile Switcher (Save / Load)"},
+h(FormInput,{title:"Preset Name",placeholder:"e.g. Admin, VIP, Mod",value:pn,onChange:function(v){setPn(v)}}),
 View&&Text?h(View,{style:{flexDirection:"row",paddingHorizontal:12,paddingBottom:8}},
-h(View,{style:{flex:1,paddingVertical:12,paddingHorizontal:8,backgroundColor:"rgba(255,255,255,0.1)",borderRadius:8,marginRight:4,alignItems:"center"},onTouchEnd:function(){savePreset(pn);setPn("");setPs(getPresetNames())}},h(Text,{style:{color:"#fff",fontWeight:"600"}},"Save Preset")),
-h(View,{style:{flex:1,paddingVertical:12,paddingHorizontal:8,backgroundColor:"rgba(255,255,255,0.05)",borderRadius:8,marginLeft:4,alignItems:"center"},onTouchEnd:function(){setPn("");setPs(getPresetNames())}},h(Text,{style:{color:"#fff",fontWeight:"600"}},"Refresh"))
+h(View,{style:{flex:1,height:44,paddingHorizontal:12,backgroundColor:"#5865F2",borderRadius:8,marginRight:4,alignItems:"center",justifyContent:"center"},onTouchEnd:function(){savePreset(pn);setPn("");setPs(getPresetNames())}},h(Text,{style:{color:"#fff",fontSize:14,fontWeight:"700"}},"Save")),
+h(View,{style:{flex:1,height:44,paddingHorizontal:12,backgroundColor:"#4f545c",borderRadius:8,marginLeft:4,alignItems:"center",justifyContent:"center"},onTouchEnd:function(){setPn("");setPs(getPresetNames())}},h(Text,{style:{color:"#fff",fontSize:14,fontWeight:"700"}},"Refresh"))
 ):null,
 ps.length&&Text?h(View,{style:{paddingHorizontal:12}},ps.map(function(n){
-return h(View,{key:n,style:{flexDirection:"row",marginBottom:4}},
-h(View,{style:{flex:1,paddingVertical:12,paddingHorizontal:12,backgroundColor:"rgba(255,255,255,0.06)",borderRadius:8,marginRight:4},onTouchEnd:function(){loadPreset(n);refreshUser();setTimeout(refreshProfile,100);setPs(getPresetNames())}},h(Text,{style:{color:"#fff"}},"\u21E8 "+n)),
-h(View,{style:{width:44,paddingVertical:12,backgroundColor:"rgba(255,0,0,0.15)",borderRadius:8,alignItems:"center"},onTouchEnd:function(){deletePreset(n);setPs(getPresetNames())}},h(Text,{style:{color:"#ff4444",fontWeight:"700"}},"\u2716"))
+return h(View,{key:n,style:{flexDirection:"row",marginBottom:6,alignItems:"center"}},
+h(View,{style:{flex:1,height:44,paddingHorizontal:12,backgroundColor:"#2f3136",borderRadius:8,marginRight:4,justifyContent:"center"},onStartShouldSetResponder:function(){return true},onTouchEnd:function(){loadPreset(n);refreshUser();setTimeout(refreshProfile,100);setPs(getPresetNames())}},h(Text,{style:{color:"#b9bbbe",fontSize:14}},"\u25B6 "+n)),
+h(View,{style:{width:44,height:44,backgroundColor:"#ed4245",borderRadius:8,alignItems:"center",justifyContent:"center"},onTouchEnd:function(){deletePreset(n);setPs(getPresetNames())}},h(Text,{style:{color:"#fff",fontSize:16,fontWeight:"700"}},"X"))
 )
 })):null),
 h(FormSection,{title:"Unlock"},
@@ -175,38 +176,54 @@ if(!store)return
 for(const k of Object.keys(store)){
 if(typeof store[k]!="function")continue
 const lbl=k.toLowerCase()
-if(!lbl.includes("deco")&&!lbl.includes("inventory")&&!lbl.includes("premium")&&!lbl.includes("collectible")&&lbl!="canuse"&&!lbl.includes("unlock")&&!lbl.includes("owned")&&!lbl.includes("shop"))continue
+if(!lbl.includes("deco")&&!lbl.includes("inven")&&!lbl.includes("collect")&&lbl!="canuse"&&!lbl.includes("owned")&&!lbl.includes("unlock")&&!lbl.includes("cangift")&&!lbl.includes("premium"))continue
 const orig=store[k]
-if(lbl.includes("canuse")||lbl.includes("unlock")||lbl.includes("owned")||lbl.includes("hasitem")||lbl.includes("haspurchased")){
-store[k]=function(){return true}
-}else if(lbl.includes("getall")||lbl.includes("fetch")||lbl.includes("inventory")||lbl.includes("collectibles")){
 store[k]=function(){
+try{
 const r=orig.apply(this,arguments)
-if(Array.isArray(r)){for(const item of r)if(item&&typeof item=="object"){item.unlocked=true;item.canUse=true;item.purchased=true;item.owned=true};return r}
+if(r===true||r===false)return true
+if(Array.isArray(r)){for(const item of r)if(item&&typeof item=="object"){item.unlocked=true;item.canUse=true;item.purchased=true;item.owned=true;item.available=true};return r}
 if(r&&typeof r=="object"){
-if(Array.isArray(r.decorations))for(const d of r.decorations)if(d&&typeof d=="object"){d.unlocked=true;d.canUse=true;d.purchased=true;d.owned=true}
-if(Array.isArray(r.collectibles))for(const d of r.collectibles)if(d&&typeof d=="object"){d.unlocked=true;d.canUse=true;d.purchased=true;d.owned=true}
-if(Array.isArray(r.items))for(const d of r.items)if(d&&typeof d=="object"){d.unlocked=true;d.canUse=true;d.purchased=true;d.owned=true}
+for(const arrKey of["decorations","collectibles","items","entries","results","data"])if(Array.isArray(r[arrKey]))for(const d of r[arrKey])if(d&&typeof d=="object"){d.unlocked=true;d.canUse=true;d.purchased=true;d.owned=true;d.available=true}
 return r
 }
 return r
-}
-}else if(lbl.includes("decoration")||lbl.includes("deco")||lbl.includes("get")||lbl.includes("list")){
-store[k]=function(){
-const r=orig.apply(this,arguments)
-if(Array.isArray(r)){for(const item of r)if(item&&typeof item=="object"){item.unlocked=true;item.canUse=true;item.purchased=true;item.owned=true};return r}
-return r
-}
+}catch(e){return true}
 }
 decoPatches.push(function(){store[k]=orig})
 }
 }
-const sn=["AvatarDecorationStore","DecorationStore","DecorationInventoryStore","PremiumSubscriptionStore","CollectiblesStore","ShopStore","InventoryStore"]
-for(const n of sn)tryPatch(findByStoreName(n))
-tryPatch(findByProps("canUseDecoration","getAvatarDecorations","getDecorations","fetchDecorations"))
-tryPatch(findByProps("canUseAvatarDecoration","getAllDecorations","getInventory"))
-tryPatch(findByProps("isDecorationUnlocked","getCollectibles"))
-tryPatch(findByProps("getPremium","getPremiumType","getPremiumTier"))
+function tryPatchProps(propName){
+try{
+const m=findByProps(propName)
+if(m&&typeof m[propName]=="function"){const o=m[propName];m[propName]=function(){return true};decoPatches.push(function(){m[propName]=o})}
+}catch(e){}
+}
+function tryPatchMulti(...props){
+try{
+const m=findByProps(...props)
+if(m)for(const k of Object.keys(m)){
+if(typeof m[k]!="function")continue
+const t=m[k].toString().toLowerCase()
+if(t.includes("avatar")||t.includes("deco")||t.includes("unlock")||t.includes("collect")||t.includes("inven")){
+const o=m[k];m[k]=function(){return true};decoPatches.push(function(){m[k]=o})
+}
+}
+}catch(e){}
+}
+const sn=["AvatarDecorationStore","DecorationStore","DecorationInventoryStore","PremiumSubscriptionStore","CollectiblesStore","InventoryStore","ShopStore","EntitlementStore","GiftStore","PremiumStore","SubscriptionStore","UserStore","ProfileStore","UserProfileStore"]
+for(const n of sn){try{const st=findByStoreName(n);if(st)tryPatch(st)}catch(e){}}
+tryPatchProps("canUseAvatarDecoration")
+tryPatchProps("isAvatarDecorationOwned")
+tryPatchProps("isDecorationUnlocked")
+tryPatchProps("canUseDecoration")
+tryPatchProps("isAvatarDecorationUnlocked")
+tryPatchMulti("canUseAvatarDecoration","getAvatarDecorations","getDecorations")
+tryPatchMulti("canUseDecoration","isDecorationUnlocked")
+tryPatchMulti("getAllCollectibles","getCollectibles")
+tryPatchMulti("getPremiumType","getPremium","isPremium")
+try{const m=findByProps("canUseAvatarDecoration","getAvatarDecorations");if(m){const o=m.canUseAvatarDecoration;m.canUseAvatarDecoration=function(){return true};decoPatches.push(function(){m.canUseAvatarDecoration=o})}}catch(e){}
+try{const all=vendetta.metro.findAllModules(function(m){if(!m||typeof m!="object")return false;for(const k of Object.keys(m)){if(typeof m[k]!="function")continue;const l=k.toLowerCase();if(l.includes("decoration")||l.includes("deco"))return true}return false});for(const mod of all){tryPatch(mod)}}catch(e){}
 }
 return{
 onLoad:function(){
