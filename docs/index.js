@@ -22,7 +22,14 @@ applyFakes(clone)
 FluxDispatcher.dispatch({type:"CURRENT_USER_UPDATE",user:clone})
 }
 function refreshProfile(){
-try{FluxDispatcher.dispatch({type:"CURRENT_USER_UPDATE",user:findByStoreName("UserStore")?.getCurrentUser()})}catch(e){}
+try{
+const id=findByStoreName("UserStore")?.getCurrentUser()?.id
+if(!id)return
+const UPS=findByProps("getUserProfile","getGuildMemberProfile")
+if(!UPS)return
+const p=UPS.getUserProfile(id)
+if(p)FluxDispatcher.dispatch({type:"USER_PROFILE_UPDATE",userProfile:{...p}})
+}catch(e){}
 }
 let patches=[]
 const COLORS=["#FF0000","#FF6600","#FFAA00","#FFFF00","#88FF00","#00FF44","#00FFAA","#00FFFF","#0088FF","#0044FF","#0000FF","#6600FF","#AA00FF","#FF00FF","#FF0088","#FF5555","#55FF55","#5555FF","#FFFFFF","#AAAAAA","#555555","#000000"]
