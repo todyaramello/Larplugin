@@ -63,7 +63,7 @@ const[ps,setPs]=useState(getPresetNames())
 const[bd,setBd]=useState(s.badges||{})
 const[du,setDu]=useState(s.decosUnlocked||false)
 return h(ScrollView,{style:{paddingBottom:24}},
-h(FormSection,{title:"Toggle"},h(FormSwitchRow,{label:"Enable LarpPlugin",value:e,onValueChange:function(v){setE(v);s.enabled=v;refreshUser();setTimeout(refreshProfile,100)}})),
+h(FormSection,{title:"Toggle"},h(FormSwitchRow,{label:"Enable LarpPlugin",value:e,onValueChange:function(v){setE(v);s.enabled=v;try{refreshUser()}catch(e){}setTimeout(refreshProfile,100)}})),
 h(FormSection,{title:"Profile"},
 h(FormInput,{title:"Fake Username",placeholder:"Enter fake username",value:un,onChange:function(v){setUn(v);s.username=v;refreshUser()}}),
 h(FormInput,{title:"Fake Display Name",placeholder:"Enter fake display name",value:dn,onChange:function(v){setDn(v);s.displayName=v;refreshUser()}}),
