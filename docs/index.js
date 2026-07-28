@@ -36,7 +36,7 @@ const COLORS=["#FF0000","#FF6600","#FFAA00","#FFFF00","#88FF00","#00FF44","#00FF
 function ColorRow({val,set,storeKey}){
 const kids=[]
 for(const c of COLORS){
-kids.push(h(View,{key:c,style:{width:30,height:30,margin:3,borderRadius:15,backgroundColor:c,borderWidth:2,borderColor:val===c?"#fff":"rgba(255,255,255,0.15)"},onStartShouldSetResponder:function(){return true},onResponderRelease:function(){set(c);s[storeKey]=c;refreshUser();setTimeout(refreshProfile,100)}}))
+kids.push(h(View,{key:c,style:{width:30,height:30,margin:3,borderRadius:15,backgroundColor:c,borderWidth:2,borderColor:val===c?"#fff":"rgba(255,255,255,0.15)"},onTouchEnd:function(e){e&&e.stopPropagation&&e.stopPropagation();set(c);s[storeKey]=c;refreshUser();setTimeout(refreshProfile,100)}}))
 }
 return h(View,{style:{flexDirection:"row",flexWrap:"wrap",paddingHorizontal:12,paddingBottom:8}},...kids)
 }
