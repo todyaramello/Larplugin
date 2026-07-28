@@ -1,0 +1,5 @@
+<!DOCTYPE html><html><body>
+<h3>Paste into /eval:</h3>
+<textarea id="t" rows="10" cols="70">(function(){var e=vendetta.metro.findByStoreName("EntitlementStore");var s=vendetta.metro.findByStoreName("SubscriptionStore");var r=[];function add(x){r.push(x)};function dump(n,store){if(!store){add(n+": NF");return};var m=[];var p=Object.getPrototypeOf(store);while(p&&p!==Object.prototype){Object.getOwnPropertyNames(p).forEach(function(k){if(k!="constructor"&&typeof store[k]=="function"&&m.indexOf(k)==-1)m.push(k)});p=Object.getPrototypeOf(p)};Object.getOwnPropertyNames(store).forEach(function(k){if(typeof store[k]=="function"&&m.indexOf(k)==-1)m.push(k)});m.sort();add(n+" ("+m.length+" methods): "+m.join(", "))};dump("EntitlementStore",e);dump("SubscriptionStore",s);return r.join("\n")})()</textarea>
+<br><button onclick="navigator.clipboard.writeText(document.getElementById('t').value)">Copy</button>
+</body></html>
