@@ -3,19 +3,18 @@ import kotlin.String
 
 group = "io.github.revenge.plugin"
 
-
 tasks {
-    fun registeringBunTask(vararg args: String) = registering(Exec::class) {
+    val installDependencies by registering(Exec::class) {
         group = "build"
-        description = "Runs Bun with arguments: ${args.joinToString(" ")}"
-
-        val bunCommand = if (Os.isFamily(Os.FAMILY_WINDOWS)) "bun.exe" else "${System.getProperty("user.home")}/.bun/bin/bun"
-
-        commandLine(bunCommand, *args)
+        description = "Installs npm dependencies"
+        commandLine("npm", "install")
     }
 
-    val installDependencies by registeringBunTask("install")
-    val build by registeringBunTask("run", "build")
+    val build by registering(Exec::class) {
+        group = "build"
+        description = "Runs the build script"
+        commandLine("npm", "run", "build")
+    }
 }
 
 configurations {

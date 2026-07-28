@@ -1,10 +1,16 @@
 {
+  "type": "module",
   "scripts": {
-    "build": "bun run scripts/build.ts"
+    "build": "node scripts/build.mjs"
   },
   "private": true,
   "devDependencies": {
-    "@biomejs/biome": "^1.9.4"
+    "esbuild": "^0.28.1"
   },
-  "trustedDependencies": ["@biomejs/biome"]
+  "trustedDependencies": [
+    "esbuild"
+  ],
+  "allowScripts": {
+    "esbuild": true
+  }
 }
