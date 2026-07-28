@@ -61,7 +61,7 @@ const[ob,setOb]=useState(s.orbBalance||"")
 const[pn,setPn]=useState("")
 const[ps,setPs]=useState(getPresetNames())
 const[bd,setBd]=useState(s.badges||{})
-const[du,setDu]=useState(s.decosUnlocked||false)
+
 return h(ScrollView,{style:{paddingBottom:24}},
 h(FormSection,{title:"Toggle"},h(FormSwitchRow,{label:"Enable LarpPlugin",value:e,onValueChange:function(v){setE(v);s.enabled=v;try{refreshUser()}catch(e){}setTimeout(refreshProfile,100)}})),
 h(FormSection,{title:"Profile"},
@@ -96,10 +96,8 @@ h(View,{style:{flex:1,height:44,paddingHorizontal:12,backgroundColor:"#2f3136",b
 h(View,{style:{width:44,height:44,backgroundColor:"#ed4245",borderRadius:8,alignItems:"center",justifyContent:"center"},onTouchEnd:function(){deletePreset(n);setPs(getPresetNames())}},h(Text,{style:{color:"#fff",fontSize:16,fontWeight:"700"}},"X"))
 )
 })):null),
-h(FormSection,{title:"Unlock"},
-h(FormSwitchRow,{label:"Unlock All Decorations",value:du,onValueChange:function(v){setDu(v);s.decosUnlocked=v;if(v)setTimeout(patchDecorations,200)}})),
 h(FormSection,{title:"Orbs"},
-h(FormInput,{title:"Fake Orb Balance",placeholder:"e.g. 1000",value:ob,onChange:function(v){setOb(v);s.orbBalance=v;refreshUser();setTimeout(refreshProfile,100);setTimeout(patchOrbStore,200)}})))
+h(FormInput,{title:"Fake Orb Balance",placeholder:"e.g. 1000",value:ob,onChange:function(v){setOb(v);s.orbBalance=v;refreshUser();setTimeout(refreshProfile,100);setTimeout(patchOrbStore,200)}}))
 }
 let orbPatches=[]
 function patchOrbStore(){
@@ -166,65 +164,6 @@ const presets=s.presets||{}
 delete presets[name];s.presets=presets
 }
 function getPresetNames(){return Object.keys(s.presets||{})}
-let decoPatches=[]
-function patchDecorations(){
-if(!s.enabled)return
-for(const p of decoPatches)try{p()}catch(e){}
-decoPatches=[]
-function tryPatch(store){
-if(!store)return
-for(const k of Object.keys(store)){
-if(typeof store[k]!="function")continue
-const lbl=k.toLowerCase()
-if(!lbl.includes("deco")&&!lbl.includes("inven")&&!lbl.includes("collect")&&lbl!="canuse"&&!lbl.includes("owned")&&!lbl.includes("unlock")&&!lbl.includes("cangift")&&!lbl.includes("premium"))continue
-const orig=store[k]
-store[k]=function(){
-try{
-const r=orig.apply(this,arguments)
-if(r===true||r===false)return true
-if(Array.isArray(r)){for(const item of r)if(item&&typeof item=="object"){item.unlocked=true;item.canUse=true;item.purchased=true;item.owned=true;item.available=true};return r}
-if(r&&typeof r=="object"){
-for(const arrKey of["decorations","collectibles","items","entries","results","data"])if(Array.isArray(r[arrKey]))for(const d of r[arrKey])if(d&&typeof d=="object"){d.unlocked=true;d.canUse=true;d.purchased=true;d.owned=true;d.available=true}
-return r
-}
-return r
-}catch(e){return true}
-}
-decoPatches.push(function(){store[k]=orig})
-}
-}
-function tryPatchProps(propName){
-try{
-const m=findByProps(propName)
-if(m&&typeof m[propName]=="function"){const o=m[propName];m[propName]=function(){return true};decoPatches.push(function(){m[propName]=o})}
-}catch(e){}
-}
-function tryPatchMulti(...props){
-try{
-const m=findByProps(...props)
-if(m)for(const k of Object.keys(m)){
-if(typeof m[k]!="function")continue
-const t=m[k].toString().toLowerCase()
-if(t.includes("avatar")||t.includes("deco")||t.includes("unlock")||t.includes("collect")||t.includes("inven")){
-const o=m[k];m[k]=function(){return true};decoPatches.push(function(){m[k]=o})
-}
-}
-}catch(e){}
-}
-const sn=["AvatarDecorationStore","DecorationStore","DecorationInventoryStore","PremiumSubscriptionStore","CollectiblesStore","InventoryStore","ShopStore","EntitlementStore","GiftStore","PremiumStore","SubscriptionStore","UserStore","ProfileStore","UserProfileStore"]
-for(const n of sn){try{const st=findByStoreName(n);if(st)tryPatch(st)}catch(e){}}
-tryPatchProps("canUseAvatarDecoration")
-tryPatchProps("isAvatarDecorationOwned")
-tryPatchProps("isDecorationUnlocked")
-tryPatchProps("canUseDecoration")
-tryPatchProps("isAvatarDecorationUnlocked")
-tryPatchMulti("canUseAvatarDecoration","getAvatarDecorations","getDecorations")
-tryPatchMulti("canUseDecoration","isDecorationUnlocked")
-tryPatchMulti("getAllCollectibles","getCollectibles")
-tryPatchMulti("getPremiumType","getPremium","isPremium")
-try{const m=findByProps("canUseAvatarDecoration","getAvatarDecorations");if(m){const o=m.canUseAvatarDecoration;m.canUseAvatarDecoration=function(){return true};decoPatches.push(function(){m.canUseAvatarDecoration=o})}}catch(e){}
-try{const all=vendetta.metro.findAllModules(function(m){if(!m||typeof m!="object")return false;for(const k of Object.keys(m)){if(typeof m[k]!="function")continue;const l=k.toLowerCase();if(l.includes("decoration")||l.includes("deco"))return true}return false});for(const mod of all){tryPatch(mod)}}catch(e){}
-}
 return{
 onLoad:function(){
 s.enabled=s.enabled===undefined?true:s.enabled
@@ -279,7 +218,6 @@ patches.push(function(){SnowflakeUtils.extractTimestamp=origExt})
 refreshUser()
 setTimeout(refreshProfile,500)
 setTimeout(patchOrbStore,1000)
-if(s.decosUnlocked)setTimeout(patchDecorations,1500)
 vendetta.logger.log("[LarpPlugin] Loaded")
 },
 onUnload:function(){
