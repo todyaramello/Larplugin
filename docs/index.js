@@ -81,7 +81,43 @@ const checked=bd[b.key]||false
 return h(FormSwitchRow,{key:b.key,label:b.label,value:checked,onValueChange:function(v){const n={...bd};n[b.key]=v;setBd(n);s.badges=n;setTimeout(function(){refreshUser();refreshProfile()},0)}})
 })),
 h(FormSection,{title:"Orbs"},
-h(FormInput,{title:"Fake Orb Balance",placeholder:"e.g. 1000",value:ob,onChange:function(v){setOb(v);s.orbBalance=v;refreshUser();setTimeout(refreshProfile,100)}})))
+h(FormInput,{title:"Fake Orb Balance",placeholder:"e.g. 1000",value:ob,onChange:function(v){setOb(v);s.orbBalance=v;refreshUser();setTimeout(refreshProfile,100);setTimeout(patchOrbStore,200)}})))
+}
+let orbPatches=[]
+function patchOrbStore(){
+if(!s.enabled||!s.orbBalance)return
+const bal=parseInt(s.orbBalance)
+if(isNaN(bal))return
+for(const p of orbPatches)try{p()}catch(e){}
+orbPatches=[]
+function makePatcher(store,k,orig){
+store[k]=function(){
+const r=orig.apply(this,arguments)
+if(typeof r=="number")return bal
+if(r&&typeof r=="object"){
+if(typeof r.balance=="number"){r.balance=bal;r.balanceTotal=bal}
+if(typeof r.amount=="number")r.amount=bal
+if(typeof r.orbs=="number")r.orbs=bal
+if(Array.isArray(r))for(const item of r){
+if(item&&typeof item=="object"&&typeof item.amount=="number")item.amount=bal
+}
+return r
+}
+return r
+}
+}
+function tryPatch(store){
+if(!store)return
+for(const k of Object.keys(store)){
+if(typeof store[k]!="function")continue
+const lbl=k.toLowerCase()
+if(!lbl.includes("orb")&&!lbl.includes("balance")&&!lbl.includes("quest"))continue
+const orig=store[k];makePatcher(store,k,orig)
+orbPatches.push(function(){store[k]=orig})
+}
+}
+for(const n of["QuestStore","OrbStore","OrbsStore"])tryPatch(findByStoreName(n))
+tryPatch(findByProps("getOrbBalance","getOrbs","getOrbCount","getQuests"))
 }
 return{
 onLoad:function(){
@@ -136,6 +172,7 @@ patches.push(function(){SnowflakeUtils.extractTimestamp=origExt})
 }
 refreshUser()
 setTimeout(refreshProfile,500)
+setTimeout(patchOrbStore,1000)
 vendetta.logger.log("[LarpPlugin] Loaded")
 },
 onUnload:function(){
