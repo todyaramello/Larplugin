@@ -184,7 +184,7 @@ try{
 const m=findByProps("parseAvatarDecorationData","isAvatarDecorationExpired")
 if(m&&typeof m.parseAvatarDecorationData=="function"){
 const orig=m.parseAvatarDecorationData
-m.parseAvatarDecorationData=function(){try{const r=orig.apply(this,arguments);if(Array.isArray(r))for(const d of r)if(d&&typeof d=="object"){d.owned=true;d.unlocked=true;d.canUse=true;d.locked=false;d.available=true};return r}catch(e){try{return orig.apply(this,arguments)}catch(e2){return arguments[0]||[]}}}
+m.parseAvatarDecorationData=function(){try{const r=orig.apply(this,arguments);if(Array.isArray(r))for(const d of r)if(d&&typeof d=="object"){d.owned=true;d.unlocked=true;d.canUse=true;d.locked=false;d.available=true;d.purchased=true;d.requirePurchase=false;d.isPurchased=true};return r}catch(e){try{return orig.apply(this,arguments)}catch(e2){return arguments[0]||[]}}}
 decoPatches.push(function(){m.parseAvatarDecorationData=orig})
 }
 }catch(e){}
@@ -197,15 +197,21 @@ m.getPurchaseDisplayInfo=function(){try{const r=orig.apply(this,arguments);if(r&
 decoPatches.push(function(){m.getPurchaseDisplayInfo=orig})
 }
 }catch(e){}
-// EntitlementStore: isEntitledToSku always true
+// EntitlementStore: patch ALL methods to indicate everything owned
 try{
 const s=findByStoreName("EntitlementStore")
-if(s&&typeof s.isEntitledToSku=="function"){
-const orig=s.isEntitledToSku
-s.isEntitledToSku=function(){return true}
-decoPatches.push(function(){s.isEntitledToSku=orig})
+if(s){
+const methods={}
+if(typeof s.isEntitledToSku=="function"){methods.isEntitledToSku=s.isEntitledToSku;s.isEntitledToSku=function(){return true}}
+if(typeof s.getForSku=="function"){methods.getForSku=s.getForSku;s.getForSku=function(){try{return methods.getForSku.apply(this,arguments)||[{id:"1",skuId:arguments[0]||"1",consumed:false,gift:false}]}catch(e){return[{id:"1",skuId:arguments[0]||"1",consumed:false,gift:false}]}}}
+if(typeof s.get=="function"){methods.get=s.get;s.get=function(){try{return methods.get.apply(this,arguments)||{}}catch(e){return{}}}}
+if(typeof s.getForSubscription=="function"){methods.getForSubscription=s.getForSubscription;s.getForSubscription=function(){try{return methods.getForSubscription.apply(this,arguments)||[]}catch(e){return[]}}}
+if(typeof s.hasFetchedForApplicationIds=="function"){methods.hasFetchedForApplicationIds=s.hasFetchedForApplicationIds;s.hasFetchedForApplicationIds=function(){return true}}
+if(typeof s.isFractionalPremiumActive=="function"){methods.isFractionalPremiumActive=s.isFractionalPremiumActive;s.isFractionalPremiumActive=function(){return true}}
+if(typeof s.getGiftable=="function"){methods.getGiftable=s.getGiftable;s.getGiftable=function(){try{return methods.getGiftable.apply(this,arguments)||[{gift:false,consumed:false}]}catch(e){return[{gift:false,consumed:false}]}}}
+decoPatches.push(function(){for(const k in methods)s[k]=methods[k]})
 }
-}catch(e){}
+}catch(e){}}
 }
 return{
 onLoad:function(){
