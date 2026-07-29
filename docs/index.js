@@ -268,34 +268,45 @@ var asset=null
 if(typeof d==="string")asset=d
 else if(d&&d.asset)asset=d.asset
 else if(d&&d.avatarDecoration&&d.avatarDecoration.asset)asset=d.avatarDecoration.asset
-if(asset&&s.avatarDecoration&&asset===s.avatarDecoration){
-return"https://cdn.discordapp.com/avatar-decoration-presets/"+asset+".png"
-}
-return orig.apply(this,args)
-}))
+    if(asset&&s.avatarDecoration&&asset===s.avatarDecoration){
+      var skuId=getDecoSku(asset)
+      return"https://cdn.discordapp.com/media/v1/collectibles-shop/"+skuId+"/static"
+    }
+    return orig.apply(this,args)
+  }))
 }
 const DecorationURL2=findByProps("getUserAvatarURL","getAvatarDecorationURL")
 if(DecorationURL2&&DecorationURL2!==DecorationURL){
-patches.push(instead("getAvatarDecorationURL",DecorationURL2,function(args,orig){
-var d=args[0]
-if(!d||!s.enabled)return orig.apply(this,args)
-var asset=null
-if(typeof d==="string")asset=d
-else if(d&&d.asset)asset=d.asset
-else if(d&&d.avatarDecoration&&d.avatarDecoration.asset)asset=d.avatarDecoration.asset
-if(asset&&s.avatarDecoration&&asset===s.avatarDecoration){
-return"https://cdn.discordapp.com/avatar-decoration-presets/"+asset+".png"
+  patches.push(instead("getAvatarDecorationURL",DecorationURL2,function(args,orig){
+    var d=args[0]
+    if(!d||!s.enabled)return orig.apply(this,args)
+    var asset=null
+    if(typeof d==="string")asset=d
+    else if(d&&d.asset)asset=d.asset
+    else if(d&&d.avatarDecoration&&d.avatarDecoration.asset)asset=d.avatarDecoration.asset
+    if(asset&&s.avatarDecoration&&asset===s.avatarDecoration){
+      var skuId=getDecoSku(asset)
+      return"https://cdn.discordapp.com/media/v1/collectibles-shop/"+skuId+"/static"
+    }
+    return orig.apply(this,args)
+  }))
 }
-return orig.apply(this,args)
-}))
+const useDecoHook=findByProps("useAvatarDecoration")
+if(useDecoHook&&useDecoHook.useAvatarDecoration){
+  patches.push(after("useAvatarDecoration",useDecoHook,function(args,ret){
+    if(!s.enabled)return ret
+    var d=getDecoObj()
+    if(d)return d
+    return ret
+  }))
 }
 const DecorationGetter=findByProps("getAvatarDecoration")
 if(DecorationGetter&&DecorationGetter.getAvatarDecoration){
-patches.push(instead("getAvatarDecoration",DecorationGetter,function(args,orig){
-var d=getDecoObj()
-if(d)return d
-return orig.apply(this,args)
-}))
+  patches.push(instead("getAvatarDecoration",DecorationGetter,function(args,orig){
+    var d=getDecoObj()
+    if(d)return d
+    return orig.apply(this,args)
+  }))
 }
 const PreviewUrlMod=findByProps("getAvatarDecorationPreviewUrl")
 if(PreviewUrlMod&&PreviewUrlMod.getAvatarDecorationPreviewUrl){
@@ -307,7 +318,8 @@ if(typeof d==="string")asset=d
 else if(d&&d.asset)asset=d.asset
 else if(d&&d.avatarDecoration&&d.avatarDecoration.asset)asset=d.avatarDecoration.asset
 if(asset&&s.avatarDecoration&&asset===s.avatarDecoration){
-return"https://cdn.discordapp.com/avatar-decoration-presets/"+asset+".png"
+var skuId=getDecoSku(asset)
+return"https://cdn.discordapp.com/media/v1/collectibles-shop/"+skuId+"/static"
 }
 return orig.apply(this,args)
 }))
