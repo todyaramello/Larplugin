@@ -12,19 +12,51 @@ const{FormInput,FormSwitchRow,FormSection}=Forms
 const h=React.createElement
 const findByStoreName=vendetta.metro.findByStoreName.bind(vendetta.metro)
 const{findByProps}=vendetta.metro
-const BADGE_MAP={staff:["staff","Discord Staff","5e74e9b61934fc1f67c65515d1f7e60d",1],partner:["partner","Partnered Server Owner","3f9748e53446a137a052f3454e2de41e",2],hypesquad_events:["hypesquad_events","HypeSquad Events","bf01d1073931f921909045f3a39fd264",4],bughunter_1:["bughunter_1","Bug Hunter Level 1","2717692c7dca7289b35297368a940dd0",8],bughunter_2:["bughunter_2","Bug Hunter Level 2","848f79194d4be5ff5f81505cbd0ce1e6",16384],hypesquad_bravery:["hypesquad_bravery","HypeSquad Bravery","8a88d63823d8a71cd5e390baa45efa02",64],hypesquad_brilliance:["hypesquad_brilliance","HypeSquad Brilliance","011940fd013da3f7fb926e4a1cd2e618",128],hypesquad_balance:["hypesquad_balance","HypeSquad Balance","3aa41de486fa12454c3761e8e223442e",256],early_supporter:["early_supporter","Early Supporter","7060786766c9c840eb3019e725d2b358",512],verified_developer:["verified_developer","Early Verified Bot Developer","6df5892e0f35b051f8b61eace34f4967",131072],certified_moderator:["certified_moderator","Moderator Programs Alumni","fee1624003e2fee35cb398e125dc479b",262144],active_developer:["active_developer","Active Developer","6bdc42827a38498929a4920da12695d9",4194304],nitro:["premium","Nitro","2ba85e8026a8614b640c2837bcdfe21b",0],bronze:["premium_tenure_1_month_v2","Nitro Bronze (1mo)","4f33c4a9c64ce221936bd256c356f91f",0],silver:["premium_tenure_3_month_v2","Nitro Silver (3mo)","4514fab914bdbfb4ad2fa23df76121a6",0],gold:["premium_tenure_6_month_v2","Nitro Gold (6mo)","2895086c18d5531d499862e41d1155a6",0],platinum:["premium_tenure_12_month_v2","Nitro Platinum (1yr)","0334688279c8359120922938dcb1d6f8",0],diamond:["premium_tenure_24_month_v2","Nitro Diamond (2yr)","0d61871f72bb9a33a7ae568c1fb4f20a",0],emerald:["premium_tenure_36_month_v2","Nitro Emerald (3yr)","11e2d339068b55d3a506cff34d3780f3",0],ruby:["premium_tenure_60_month_v2","Nitro Ruby (5yr)","cd5e2cfd9d7f27a8cdcd3e8a8d5dc9f4",0],opal:["premium_tenure_72_month_v2","Nitro Opal (6yr+)","5b154df19c53dce2af92c9b61e6be5e2",0],orb:["orb_profile_badge","Collected the Orb Profile Badge","83d8a1eb09a8d64e59233eec5d4d5c2d",0],booster:["guild_booster_lvl1","Server Booster","51040c70d4f20a921ad6674ff86fc95c",0]}
+const{after,instead}=vendetta.patcher
+const BADGE_MAP={staff:["staff","Discord Staff","5e74e9b61934fc1f67c65515d1f7e60d",1],partner:["partner","Partnered Server Owner","3f9748e53446a137a052f3454e2de41e",2],hypesquad_events:["hypesquad_events","HypeSquad Events","bf01d1073931f921909045f3a39fd264",4],bughunter_1:["bughunter_1","Bug Hunter Level 1","2717692c7dca7289b35297368a940dd0",8],bughunter_2:["bughunter_2","Bug Hunter Level 2","848f79194d4be5ff5f81505cbd0ce1e6",16384],hypesquad_bravery:["hypesquad_bravery","HypeSquad Bravery","8a88d63823d8a71cd5e390baa45efa02",64],hypesquad_brilliance:["hypesquad_brilliance","HypeSquad Brilliance","011940fd013da3f7fb926e4a1cd2e618",128],hypesquad_balance:["hypesquad_balance","HypeSquad Balance","3aa41de486fa12454c3761e8e223442e",256],early_supporter:["early_supporter","Early Supporter","7060786766c9c840eb3019e725d2b358",512],verified_developer:["verified_developer","Early Verified Bot Developer","6df5892e0f35b051f8b61eace34f4967",131072],certified_moderator:["certified_moderator","Moderator Programs Alumni","fee1624003e2fee35cb398e125dc479b",262144],active_developer:["active_developer","Active Developer","6bdc42827a38498929a4920da12695d9",4194304],nitro:["premium","Nitro","2ba85e8026a8614b640c2837bcdfe21b",0],bronze:["premium_tenure_1_month_v2","Nitro Bronze (1mo)","4f33c4a9c64ce221936bd256c356f91f",0],silver:["premium_tenure_3_month_v2","Nitro Silver (3mo)","4514fab914bdbfb4ad2fa23df76121a6",0],gold:["premium_tenure_6_month_v2","Nitro Gold (6mo)","2895086c18d5531d499862e41d1155a6",0],platinum:["premium_tenure_12_month_v2","Nitro Platinum (1yr)","0334688279c8359120922938dcb1d6f8",0],diamond:["premium_tenure_24_month_v2","Nitro Diamond (2yr)","0d61871f72bb9a33a7ae568c1fb4f20a",0],emerald:["premium_tenure_36_month_v2","Nitro Emerald (3yr)","11e2d339068b55d3a506cff34d3780f3",0],ruby:["premium_tenure_60_month_v2","Nitro Ruby (5yr)","cd5e2cfd9d7f27a8cdcd3e8a8d5dc9f4",0],opal:["premium_tenure_72_month_v2","Nitro Opal (6yr+)","5b154df19c53dce2af92c9b61e6be5e2",0],orb:["orb_profile_badge","Orb Profile Badge","5cf444b0ba58a98d2d569f07d3081ca6",0],booster:["guild_booster_lvl4","Server Booster","b6f22629cb1f88def1e5f9f25c398700",0]}
 function calculateFlags(){let flags=0;for(const[k,[id,desc,icon,f]]of Object.entries(BADGE_MAP)){if(s.badges?.[k]&&f>0)flags|=f}return flags}
 function getFakeBadges(){const r=[];for(const[k,[id,desc,icon]]of Object.entries(BADGE_MAP)){if(s.badges?.[k])r.push({id,description:desc,icon})}return r}
 function getDecoSku(hash){var m={"a_0c0eeb351ae2cf48c6e1eee2cae49d40":"1352687418418921532","a_0e839cd79500e7b68e2bbbed54790c28":"1352687448228106302","a_77b7b6a740a9451e1ef39c0252154ef8":"1352691394426306601"};return m[hash]||"1352687418418921532"}
-function applyFakes(user){if(!user||!s.enabled)return user;user.premiumType=2;user.premiumFlags=7;if(s.orbBalance){const n=parseInt(s.orbBalance);if(!isNaN(n))user.orbBalance=n};if(s.username)user.username=s.username;if(s.displayName)user.globalName=s.displayName;if(s.email)user.email=s.email;if(s.phone)user.phone=s.phone;if(s.bio)user.bio=s.bio;if(s.avatar)user.avatar=s.avatar;if(s.banner)user.banner=s.banner;if(s.avatarDecoration&&s.avatarDecoration.startsWith("a_")){var decoObj={asset:s.avatarDecoration,skuId:getDecoSku(s.avatarDecoration)};user.avatarDecoration=decoObj;user.avatarDecorationData=decoObj};if(s.joinYear){const d=new Date(parseInt(s.joinYear),Math.floor(Math.random()*12),Math.floor(Math.random()*28)+1).getTime();user.createdAt=d;user.timestamp=d};if(s.accent||s.accent2){const n1=s.accent?parseInt(s.accent.replace("#",""),16):0;const n2=s.accent2?parseInt(s.accent2.replace("#",""),16):0;const ok1=!isNaN(n1)&&s.accent;const ok2=!isNaN(n2)&&s.accent2;if(ok1)user.accentColor=n1;if(ok1||ok2)user.themeColors=[ok1?n1:n2,ok2?n2:n1]};const flags=calculateFlags();if(flags>0){user.flags=flags;user.publicFlags=flags};return user}
+const DEFAULT_DECO_HASH="a_0c0eeb351ae2cf48c6e1eee2cae49d40"
+
+function getDecoAsset(){
+if(s.avatarDecoration&&s.avatarDecoration.startsWith("a_"))return s.avatarDecoration
+if(s.enabled)return DEFAULT_DECO_HASH
+return null
+}
+
+function getDecoObj(){
+const a=getDecoAsset()
+if(!a)return null
+return{asset:a,skuId:getDecoSku(a)}
+}
+
+function applyFakes(user){
+if(!user||!s.enabled)return user
+user.premiumType=2;user.premiumFlags=7
+if(s.orbBalance){const n=parseInt(s.orbBalance);if(!isNaN(n))user.orbBalance=n}
+if(s.username)user.username=s.username
+if(s.displayName)user.globalName=s.displayName
+if(s.email)user.email=s.email
+if(s.phone)user.phone=s.phone
+if(s.bio)user.bio=s.bio
+if(s.avatar)user.avatar=s.avatar
+if(s.banner)user.banner=s.banner
+var d=getDecoObj()
+if(d){user.avatarDecoration=d;user.avatarDecorationData=d}
+if(s.joinYear){const d=new Date(parseInt(s.joinYear),Math.floor(Math.random()*12),Math.floor(Math.random()*28)+1).getTime();user.createdAt=d;user.timestamp=d}
+if(s.accent||s.accent2){const n1=s.accent?parseInt(s.accent.replace("#",""),16):0;const n2=s.accent2?parseInt(s.accent2.replace("#",""),16):0;const ok1=!isNaN(n1)&&s.accent;const ok2=!isNaN(n2)&&s.accent2;if(ok1)user.accentColor=n1;if(ok1||ok2)user.themeColors=[ok1?n1:n2,ok2?n2:n1]}
+const flags=calculateFlags();if(flags>0){user.flags=flags;user.publicFlags=flags}
+return user
+}
+
 function refreshUser(){
 const UserStore=findByStoreName("UserStore")
 const raw=UserStore?.getCurrentUser?.()
 if(!raw)return
-const clone={...raw}
-applyFakes(clone)
-FluxDispatcher.dispatch({type:"CURRENT_USER_UPDATE",user:clone})
-FluxDispatcher.dispatch({type:"USER_UPDATE",user:clone})
+applyFakes(raw)
+FluxDispatcher.dispatch({type:"CURRENT_USER_UPDATE",user:raw})
+FluxDispatcher.dispatch({type:"USER_UPDATE",user:raw})
 }
 function refreshProfile(){
 try{
@@ -33,11 +65,13 @@ if(!raw)return
 const id=raw.id
 const UPS=findByProps("getUserProfile","getGuildMemberProfile")
 if(!UPS)return
-const p=UPS.getUserProfile(id)
+let p=UPS.getUserProfile(id)
 if(p){
-const profile={...p}
-FluxDispatcher.dispatch({type:"USER_PROFILE_UPDATE",userProfile:profile})
-FluxDispatcher.dispatch({type:"USER_PROFILE_FETCH_SUCCESS",user:raw,user_profile:profile,connected_accounts:profile.connectedAccounts||[]})
+p={...p}
+var d=getDecoObj()
+if(d){p.avatarDecoration=d;p.avatarDecorationData=d}
+FluxDispatcher.dispatch({type:"USER_PROFILE_UPDATE",userProfile:p})
+FluxDispatcher.dispatch({type:"USER_PROFILE_FETCH_SUCCESS",user:raw,user_profile:p,connected_accounts:p.connectedAccounts||[]})
 }
 }catch(e){}
 }
@@ -175,109 +209,122 @@ function getPresetNames(){return Object.keys(s.presets||{})}
 return{
 onLoad:function(){
 s.enabled=s.enabled===undefined?true:s.enabled
+if(s.avatarDecoration===undefined)s.avatarDecoration=DEFAULT_DECO_HASH
 const UserStore=findByStoreName("UserStore")
-const orig=UserStore.getCurrentUser
-UserStore.getCurrentUser=function(){const u=orig.apply(this,arguments);return u&&s.enabled?applyFakes(u):u}
-patches.push(function(){UserStore.getCurrentUser=orig})
-const origById=UserStore.getUser
-if(origById){
-UserStore.getUser=function(id){
-const u=origById.apply(this,arguments)
-if(!u||!s.enabled)return u
-const cu=UserStore.getCurrentUser()
-return cu&&id===cu.id?applyFakes(u):u
-}
-patches.push(function(){UserStore.getUser=origById})}
+patches.push(after("getCurrentUser",UserStore,function(args,ret){
+return ret&&s.enabled?applyFakes(ret):ret
+}))
+patches.push(after("getUser",UserStore,function(args,ret){
+if(!ret||!s.enabled)return ret
+const selfId=UserStore.getCurrentUser()?.id
+if(selfId&&args[0]===selfId)return applyFakes(ret)
+return ret
+}))
 const UPS=findByProps("getUserProfile","getGuildMemberProfile")
-if(UPS&&typeof UPS.getUserProfile==="function"){
-const op=UPS.getUserProfile
+if(UPS){
+patches.push(after("getUserProfile",UPS,function([id],profile){
+if(!profile||!s.enabled)return profile
 const selfId=findByStoreName("UserStore")?.getCurrentUser()?.id
-    UPS.getUserProfile=function(id){
-      const p=op.apply(this,arguments)
-      if(p&&s.enabled&&selfId&&id===selfId){
-        const c={...p}
-        c.badges=getFakeBadges()
-        c.premiumType=2;c.premiumFlags=7
-        if(s.orbBalance){const n=parseInt(s.orbBalance);if(!isNaN(n))c.orbBalance=n}
-if(s.avatarDecoration&&s.avatarDecoration.startsWith("a_")){var decoObj={asset:s.avatarDecoration,skuId:getDecoSku(s.avatarDecoration)};c.avatarDecoration=decoObj;c.avatarDecorationData=decoObj}
-        if(s.accent||s.accent2){
-          const n1=s.accent?parseInt(s.accent.replace("#",""),16):0
-          const n2=s.accent2?parseInt(s.accent2.replace("#",""),16):0
-          const ok1=!isNaN(n1)&&s.accent
-          const ok2=!isNaN(n2)&&s.accent2
-          if(ok1)c.accentColor=n1
-          if(ok1||ok2)c.themeColors=[ok1?n1:n2,ok2?n2:n1]
-        }
-        return c
-      }
-      return p
-    }
-patches.push(function(){UPS.getUserProfile=op})
+if(selfId&&id===selfId){
+profile.badges=getFakeBadges()
+profile.premiumType=2;profile.premiumFlags=7
+if(s.orbBalance){const n=parseInt(s.orbBalance);if(!isNaN(n))profile.orbBalance=n}
+var d=getDecoObj()
+if(d){profile.avatarDecoration=d;profile.avatarDecorationData=d}
+if(s.accent||s.accent2){
+const n1=s.accent?parseInt(s.accent.replace("#",""),16):0
+const n2=s.accent2?parseInt(s.accent2.replace("#",""),16):0
+const ok1=!isNaN(n1)&&s.accent
+const ok2=!isNaN(n2)&&s.accent2
+if(ok1)profile.accentColor=n1
+if(ok1||ok2)profile.themeColors=[ok1?n1:n2,ok2?n2:n1]
+}
+}
+return profile
+}))
 }
 const SnowflakeUtils=findByProps("extractTimestamp","fromTimestamp")
 if(SnowflakeUtils){
-const origExt=SnowflakeUtils.extractTimestamp
+patches.push(instead("extractTimestamp",SnowflakeUtils,function(args,orig){
+const id=args[0]
+if(s.enabled&&s.joinYear){
 const selfId=findByStoreName("UserStore")?.getCurrentUser()?.id
-            SnowflakeUtils.extractTimestamp=function(sn){
-if(s.enabled&&s.joinYear&&selfId&&sn===selfId)return new Date(parseInt(s.joinYear),Math.floor(Math.random()*12),Math.floor(Math.random()*28)+1).getTime()
-return origExt.apply(this,arguments)
+if(selfId&&id===selfId)return new Date(parseInt(s.joinYear),Math.floor(Math.random()*12),Math.floor(Math.random()*28)+1).getTime()
 }
-patches.push(function(){SnowflakeUtils.extractTimestamp=origExt})
+return orig.apply(this,args)
+}))
 }
-const DecorationURL=findByProps("getAvatarDecorationURL")
-if(DecorationURL&&typeof DecorationURL.getAvatarDecorationURL==="function"){
-const origDeco=DecorationURL.getAvatarDecorationURL
- DecorationURL.getAvatarDecorationURL=function(d){
-if(d&&d.avatarDecoration&&d.avatarDecoration.asset&&s.enabled&&s.avatarDecoration&&d.avatarDecoration.asset===s.avatarDecoration){
-return"https://cdn.discordapp.com/avatar-decoration-presets/"+d.avatarDecoration.asset+".png"
+const DecorationURL=findByProps("getAvatarDecorationURL","default")
+if(DecorationURL){
+patches.push(instead("getAvatarDecorationURL",DecorationURL,function(args,orig){
+var d=args[0]
+if(!d||!s.enabled)return orig.apply(this,args)
+var asset=null
+if(typeof d==="string")asset=d
+else if(d&&d.asset)asset=d.asset
+else if(d&&d.avatarDecoration&&d.avatarDecoration.asset)asset=d.avatarDecoration.asset
+if(asset&&s.avatarDecoration&&asset===s.avatarDecoration){
+return"https://cdn.discordapp.com/avatar-decoration-presets/"+asset+".png"
 }
-return origDeco.apply(this,arguments)
+return orig.apply(this,args)
+}))
 }
-patches.push(function(){DecorationURL.getAvatarDecorationURL=origDeco})
+const DecorationURL2=findByProps("getUserAvatarURL","getAvatarDecorationURL")
+if(DecorationURL2&&DecorationURL2!==DecorationURL){
+patches.push(instead("getAvatarDecorationURL",DecorationURL2,function(args,orig){
+var d=args[0]
+if(!d||!s.enabled)return orig.apply(this,args)
+var asset=null
+if(typeof d==="string")asset=d
+else if(d&&d.asset)asset=d.asset
+else if(d&&d.avatarDecoration&&d.avatarDecoration.asset)asset=d.avatarDecoration.asset
+if(asset&&s.avatarDecoration&&asset===s.avatarDecoration){
+return"https://cdn.discordapp.com/avatar-decoration-presets/"+asset+".png"
+}
+return orig.apply(this,args)
+}))
 }
 const DecorationGetter=findByProps("getAvatarDecoration")
-if(DecorationGetter&&typeof DecorationGetter.getAvatarDecoration==="function"){
-const origGet=DecorationGetter.getAvatarDecoration
-DecorationGetter.getAvatarDecoration=function(u){
-if(!u||!s.enabled||!s.avatarDecoration||!s.avatarDecoration.startsWith("a_"))return origGet.apply(this,arguments)
-return{asset:s.avatarDecoration,skuId:getDecoSku(s.avatarDecoration)}
-}
-patches.push(function(){DecorationGetter.getAvatarDecoration=origGet})
+if(DecorationGetter&&DecorationGetter.getAvatarDecoration){
+patches.push(instead("getAvatarDecoration",DecorationGetter,function(args,orig){
+var d=getDecoObj()
+if(d)return d
+return orig.apply(this,args)
+}))
 }
 const PreviewUrlMod=findByProps("getAvatarDecorationPreviewUrl")
-if(PreviewUrlMod&&typeof PreviewUrlMod.getAvatarDecorationPreviewUrl==="function"){
-const origPrev=PreviewUrlMod.getAvatarDecorationPreviewUrl
-PreviewUrlMod.getAvatarDecorationPreviewUrl=function(d){
-if(d&&d.asset&&s.enabled&&s.avatarDecoration&&d.asset===s.avatarDecoration){
-return"https://cdn.discordapp.com/avatar-decoration-presets/"+d.asset+".png"
+if(PreviewUrlMod&&PreviewUrlMod.getAvatarDecorationPreviewUrl){
+patches.push(instead("getAvatarDecorationPreviewUrl",PreviewUrlMod,function(args,orig){
+var d=args[0]
+if(!d||!s.enabled)return orig.apply(this,args)
+var asset=null
+if(typeof d==="string")asset=d
+else if(d&&d.asset)asset=d.asset
+else if(d&&d.avatarDecoration&&d.avatarDecoration.asset)asset=d.avatarDecoration.asset
+if(asset&&s.avatarDecoration&&asset===s.avatarDecoration){
+return"https://cdn.discordapp.com/avatar-decoration-presets/"+asset+".png"
 }
-return origPrev.apply(this,arguments)
+return orig.apply(this,args)
+}))
 }
-patches.push(function(){PreviewUrlMod.getAvatarDecorationPreviewUrl=origPrev})
+const DecHookMod=findByProps("useAvatarDecoration","getAvatarDecoration")
+if(DecHookMod){
+patches.push(instead("useAvatarDecoration",DecHookMod,function(args,orig){
+var d=getDecoObj()
+if(d)return d
+return orig.apply(this,args)
+}))
 }
 const PurchaseStore=findByStoreName("CollectiblesPurchaseStore")
-if(PurchaseStore&&typeof PurchaseStore.getPurchase==="function"){
-const origPurchase=PurchaseStore.getPurchase
-PurchaseStore.getPurchase=function(skuId){
-if(skuId&&s.enabled&&s.avatarDecoration){
-const ourSku=getDecoSku(s.avatarDecoration)
-if(skuId===ourSku)return{purchasedAt:new Date(),skuId:ourSku}
+if(PurchaseStore){
+patches.push(instead("getPurchase",PurchaseStore,function(args,orig){
+const skuId=args[0]
+if(skuId&&s.enabled){
+var d=getDecoObj()
+if(d&&d.skuId===skuId)return{purchasedAt:new Date(),skuId:skuId}
 }
-return origPurchase.apply(this,arguments)
-}
-patches.push(function(){PurchaseStore.getPurchase=origPurchase})
-}
-var DecHookMod=findByProps("useAvatarDecoration")
-if(DecHookMod&&DecHookMod.useAvatarDecoration){
-var origHook=DecHookMod.useAvatarDecoration
-DecHookMod.useAvatarDecoration=function(user){
-var r=origHook.apply(this,arguments)
-if(s.enabled&&s.avatarDecoration&&s.avatarDecoration.startsWith("a_")){
-return{asset:s.avatarDecoration,skuId:getDecoSku(s.avatarDecoration)}
-}
-return r
-}
-patches.push(function(){DecHookMod.useAvatarDecoration=origHook})
+return orig.apply(this,args)
+}))
 }
 refreshUser()
 setTimeout(refreshProfile,500)
