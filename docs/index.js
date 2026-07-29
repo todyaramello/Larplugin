@@ -367,7 +367,7 @@ walk(f.child,depth+1);
 walk(f.sibling,depth);
 }
 walk(roots.values().next().value.current,0);
-}
+})
 vendetta.logger.log("[TREE]\n"+found.join('\n')+"\n("+visited+" fibers)");
 }catch(e){vendetta.logger.log("[TREE] error "+e.message)}
 },3000)
