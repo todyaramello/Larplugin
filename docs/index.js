@@ -290,6 +290,17 @@ if(DecorationURL2&&DecorationURL2!==DecorationURL){
     }
     return orig.apply(this,args)
   }))
+  if(typeof DecorationURL2.getUserAvatarSource==="function"){
+    patches.push(after("getUserAvatarSource",DecorationURL2,function(args,ret){
+      if(!ret||!s.enabled||!ret.decoration)return ret
+      var deco=ret.decoration
+      if(typeof deco==="object"&&deco.uri&&deco.uri.includes(s.avatarDecoration)){
+        var skuId=getDecoSku(s.avatarDecoration)
+        deco.uri="https://cdn.discordapp.com/media/v1/collectibles-shop/"+skuId+"/static"
+      }
+      return ret
+    }))
+  }
 }
 const DecorationGetter=findByProps("getAvatarDecoration")
 if(DecorationGetter&&DecorationGetter.getAvatarDecoration){
@@ -299,12 +310,22 @@ if(DecorationGetter&&DecorationGetter.getAvatarDecoration){
     return orig.apply(this,args)
   }))
 }
-const DecHookMod=findByProps("useAvatarDecoration","getAvatarDecoration")
-if(DecHookMod){
-  patches.push(instead("useAvatarDecoration",DecHookMod,function(args,orig){
+var decoHookMod=findByProps("useAvatarDecoration","getAvatarDecoration")
+if(decoHookMod){
+  patches.push(after("useAvatarDecoration",decoHookMod,function(args,ret){
+    if(!s.enabled)return ret
     var d=getDecoObj()
     if(d)return d
-    return orig.apply(this,args)
+    return ret
+  }))
+}
+var uadMod=findByProps("useUserAvatarDecoration")
+if(uadMod){
+  patches.push(after("useUserAvatarDecoration",uadMod,function(args,ret){
+    if(!s.enabled)return ret
+    var d=getDecoObj()
+    if(d)return d
+    return ret
   }))
 }
 const PreviewUrlMod=findByProps("getAvatarDecorationPreviewUrl")
