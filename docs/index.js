@@ -18,6 +18,8 @@ function calculateFlags(){let flags=0;for(const[k,[id,desc,icon,f]]of Object.ent
 function getFakeBadges(){const r=[];for(const[k,[id,desc,icon]]of Object.entries(BADGE_MAP)){if(s.badges?.[k])r.push({id,description:desc,icon})}return r}
 function getDecoSku(hash){
   var m={
+    "a_3513b3b45624e47a4855f6951eea484d":"1366494385537028208",
+    "a_c3cffc19e9784f7d0b005eecdf1b566e":"1212569433839636530",
     "a_305fc9222776843327e6d91d2146eb3c":"1365410896096268368",
     "a_660864ff7dd56109fbbae3d607f664ae":"1483914997330608168",
     "a_490c2310195e1403c68b73301f083929":"1483915211428724806",
@@ -204,7 +206,7 @@ h(FormInput,{title:"Fake Avatar URL",placeholder:"https://i.imgur.com/...png",va
 h(FormInput,{title:"Fake Banner URL",placeholder:"https://i.imgur.com/...png",value:ba,onChange:function(v){setBa(v);s.banner=v;refreshUser()}})),
 h(FormSection,{title:"Avatar Decoration"},
 h(FormInput,{title:"Custom Asset Hash",placeholder:"a_... (or select a preset below)",value:ad,onChange:function(v){setAd(v);s.avatarDecoration=v;refreshUser();setTimeout(refreshProfile,100)}}),
-View?h(View,{style:{flexDirection:"row",flexWrap:"wrap",paddingHorizontal:12,paddingBottom:8}},[["None","",0],["Deco 1","a_305fc9222776843327e6d91d2146eb3c",1],["Deco 2","a_660864ff7dd56109fbbae3d607f664ae",2],["Deco 3","a_490c2310195e1403c68b73301f083929",3],["Deco 4","a_e091aa2bdff020b60be22c794a3e66bd",4],["Deco 5","a_ff85aecc3d7611da24364952db4b5c4e",5],["Deco 6","a_1ab42e495777eb9e8728a6c636b0a954",6],["Deco 7","a_d6b900c052726061be62b8ff4278d135",7],["Deco 8","a_06e1b28461422fc20d3b3d908cc0c8fb",8],["Deco 9","a_c9a52215698a9b4b75bd6e9bdd14f8b1",9],["Deco 10","a_fc10280d008d9749f3e5048af8d0f54f",10]].map(function(p){return h(View,{key:p[2],style:{paddingHorizontal:12,paddingVertical:8,margin:4,backgroundColor:"#2f3136",borderRadius:8},onTouchEnd:function(){setAd(p[1]);s.avatarDecoration=p[1];refreshUser();setTimeout(refreshProfile,100)}},h(Text,{style:{color:"#b9bbbe",fontSize:13}},p[0]))})):null),
+View?h(View,{style:{flexDirection:"row",flexWrap:"wrap",paddingHorizontal:12,paddingBottom:8}},[["None","",0],["Cat Ears","a_3513b3b45624e47a4855f6951eea484d",1],["Deco A","a_c3cffc19e9784f7d0b005eecdf1b566e",2],["Deco 1","a_305fc9222776843327e6d91d2146eb3c",3],["Deco 2","a_660864ff7dd56109fbbae3d607f664ae",4],["Deco 3","a_490c2310195e1403c68b73301f083929",5],["Deco 4","a_e091aa2bdff020b60be22c794a3e66bd",6],["Deco 5","a_ff85aecc3d7611da24364952db4b5c4e",7],["Deco 6","a_1ab42e495777eb9e8728a6c636b0a954",8],["Deco 7","a_d6b900c052726061be62b8ff4278d135",9],["Deco 8","a_06e1b28461422fc20d3b3d908cc0c8fb",10],["Deco 9","a_c9a52215698a9b4b75bd6e9bdd14f8b1",11],["Deco 10","a_fc10280d008d9749f3e5048af8d0f54f",12]].map(function(p){return h(View,{key:p[2],style:{paddingHorizontal:12,paddingVertical:8,margin:4,backgroundColor:"#2f3136",borderRadius:8},onTouchEnd:function(){setAd(p[1]);s.avatarDecoration=p[1];refreshUser();setTimeout(refreshProfile,100)}},h(Text,{style:{color:"#b9bbbe",fontSize:13}},p[0]))})):null),
 h(FormSection,{title:"Badges"},BADGE_LIST.map(function(b){
 const checked=bd[b.key]||false
 return h(FormSwitchRow,{key:b.key,label:b.label,value:checked,onValueChange:function(v){const n={...bd};n[b.key]=v;setBd(n);s.badges=n;setTimeout(function(){refreshUser();refreshProfile()},0)}})
@@ -347,8 +349,7 @@ if(typeof d==="string")asset=d
 else if(d&&d.asset)asset=d.asset
 else if(d&&d.avatarDecoration&&d.avatarDecoration.asset)asset=d.avatarDecoration.asset
     if(asset&&s.avatarDecoration&&asset===s.avatarDecoration){
-      var sku = getDecoSku(asset)
-      return"https://cdn.discordapp.com/media/v1/collectibles-shop/"+sku+"/static"
+      return"https://cdn.discordapp.com/avatar-decoration-presets/"+asset+".png"
     }
     return orig.apply(this,args)
   }))
@@ -363,8 +364,7 @@ if(DecorationURL2&&DecorationURL2!==DecorationURL){
     else if(d&&d.asset)asset=d.asset
     else if(d&&d.avatarDecoration&&d.avatarDecoration.asset)asset=d.avatarDecoration.asset
     if(asset&&s.avatarDecoration&&asset===s.avatarDecoration){
-      var sku = getDecoSku(asset)
-      return"https://cdn.discordapp.com/media/v1/collectibles-shop/"+sku+"/static"
+      return"https://cdn.discordapp.com/avatar-decoration-presets/"+asset+".png"
     }
 return orig.apply(this,args)
 }))
@@ -387,8 +387,7 @@ if(typeof d==="string")asset=d
 else if(d&&d.asset)asset=d.asset
 else if(d&&d.avatarDecoration&&d.avatarDecoration.asset)asset=d.avatarDecoration.asset
     if(asset&&s.avatarDecoration&&asset===s.avatarDecoration){
-      var sku = getDecoSku(asset)
-      return"https://cdn.discordapp.com/media/v1/collectibles-shop/"+sku+"/static"
+      return"https://cdn.discordapp.com/avatar-decoration-presets/"+asset+".png"
     }
     return orig.apply(this,args)
   }))
