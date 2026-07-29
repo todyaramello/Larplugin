@@ -335,6 +335,13 @@ if(d&&d.skuId===skuId)return{purchasedAt:new Date(),skuId:skuId}
 return orig.apply(this,args)
 }))
 }
+var fluxSub=FluxDispatcher.subscribe("CURRENT_USER_UPDATE",function(e){
+  if(!s.enabled)return
+  var us=findByStoreName("UserStore")
+  var cu=us?.getCurrentUser()
+  if(cu)applyFakes(cu)
+})
+patches.push(function(){fluxSub()})
 refreshUser()
 setTimeout(refreshProfile,500)
 setTimeout(patchOrbStore,1000)
