@@ -305,28 +305,33 @@ if(DecorationURL2&&DecorationURL2!==DecorationURL){
     return orig.apply(this,args)
   }))
 }
-function patchDecoHook(module,propName,withIdCheck){
-  if(!module||!module[propName])return
-  patches.push(instead(propName,module,function(args,orig){
-    if(!s.enabled)return orig.apply(this,args)
-    if(withIdCheck){
-      var userId=args[0]
-      var selfId=findByStoreName("UserStore")?.getCurrentUser()?.id
-      if(typeof userId==="string"&&userId!==selfId)return orig.apply(this,args)
-    }
-    var d=getDecoObj()
-    if(d)return d
-    return orig.apply(this,args)
-  }))
+function patchDecoHook(m,p){
+  if(!m||!m[p])return
+  var isHook=p.startsWith("use")
+  if(isHook){
+    patches.push(after(p,m,function(args,ret){
+      if(!s.enabled)return ret
+      var d=getDecoObj()
+      if(d)return d
+      return ret
+    }))
+  }else{
+    patches.push(instead(p,m,function(args,orig){
+      if(!s.enabled)return orig.apply(this,args)
+      var d=getDecoObj()
+      if(d)return d
+      return orig.apply(this,args)
+    }))
+  }
 }
-patchDecoHook(findByProps("useAvatarDecoration"),"useAvatarDecoration",true)
-patchDecoHook(findByProps("useAvatarDecoration"),"getAvatarDecoration",false)
+patchDecoHook(findByProps("useAvatarDecoration"),"useAvatarDecoration")
+patchDecoHook(findByProps("useAvatarDecoration"),"getAvatarDecoration")
 var UADMod=findByProps("useUserAvatarDecoration")
 if(UADMod){
-  patchDecoHook(UADMod,"useUserAvatarDecoration",true)
-  patchDecoHook(UADMod,"useAvatarDecorationSettings",false)
-  patchDecoHook(UADMod,"getProfilePreviewValue",false)
-  patchDecoHook(UADMod,"resolveCollectiblesOverride",false)
+  patchDecoHook(UADMod,"useUserAvatarDecoration")
+  patchDecoHook(UADMod,"useAvatarDecorationSettings")
+  patchDecoHook(UADMod,"getProfilePreviewValue")
+  patchDecoHook(UADMod,"resolveCollectiblesOverride")
 }
 const PreviewUrlMod=findByProps("getAvatarDecorationPreviewUrl")
 if(PreviewUrlMod&&PreviewUrlMod.getAvatarDecorationPreviewUrl){
