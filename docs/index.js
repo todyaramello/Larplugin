@@ -315,13 +315,14 @@ function patchDecoHook(m,p){
   }))
 }
 patchDecoHook(findByProps("useAvatarDecoration"),"useAvatarDecoration")
-patchDecoHook(findByProps("useAvatarDecoration"),"getAvatarDecoration")
-var UADMod=findByProps("useUserAvatarDecoration")
-if(UADMod){
-  patchDecoHook(UADMod,"useUserAvatarDecoration")
-  patchDecoHook(UADMod,"useAvatarDecorationSettings")
-  patchDecoHook(UADMod,"getProfilePreviewValue")
-  patchDecoHook(UADMod,"resolveCollectiblesOverride")
+patchDecoHook(findByProps("useUserAvatarDecoration"),"useUserAvatarDecoration")
+var DecorationGetter=findByProps("getAvatarDecoration")
+if(DecorationGetter&&DecorationGetter.getAvatarDecoration){
+  patches.push(instead("getAvatarDecoration",DecorationGetter,function(args,orig){
+    var d=getDecoObj()
+    if(d)return d
+    return orig.apply(this,args)
+  }))
 }
 const PreviewUrlMod=findByProps("getAvatarDecorationPreviewUrl")
 if(PreviewUrlMod&&PreviewUrlMod.getAvatarDecorationPreviewUrl){
