@@ -307,22 +307,12 @@ if(DecorationURL2&&DecorationURL2!==DecorationURL){
 }
 function patchDecoHook(m,p){
   if(!m||!m[p])return
-  var isHook=p.startsWith("use")
-  if(isHook){
-    patches.push(after(p,m,function(args,ret){
-      if(!s.enabled)return ret
-      var d=getDecoObj()
-      if(d)return d
-      return ret
-    }))
-  }else{
-    patches.push(instead(p,m,function(args,orig){
-      if(!s.enabled)return orig.apply(this,args)
-      var d=getDecoObj()
-      if(d)return d
-      return orig.apply(this,args)
-    }))
-  }
+  patches.push(after(p,m,function(args,ret){
+    if(!s.enabled)return ret
+    var d=getDecoObj()
+    if(d)return d
+    return ret
+  }))
 }
 patchDecoHook(findByProps("useAvatarDecoration"),"useAvatarDecoration")
 patchDecoHook(findByProps("useAvatarDecoration"),"getAvatarDecoration")
