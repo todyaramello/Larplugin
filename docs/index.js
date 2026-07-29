@@ -307,14 +307,14 @@ if(DecorationURL2&&DecorationURL2!==DecorationURL){
 }
 function patchDecoHook(module,propName){
   if(!module||!module[propName])return
-  patches.push(after(propName,module,function(args,ret){
-    if(!s.enabled)return ret
+  patches.push(instead(propName,module,function(args,orig){
+    if(!s.enabled)return orig.apply(this,args)
     var userId=args[0]
     var selfId=findByStoreName("UserStore")?.getCurrentUser()?.id
-    if(userId&&userId!==selfId)return ret
+    if(userId&&userId!==selfId)return orig.apply(this,args)
     var d=getDecoObj()
     if(d)return d
-    return ret
+    return orig.apply(this,args)
   }))
 }
 patchDecoHook(findByProps("useAvatarDecoration"),"useAvatarDecoration")
@@ -358,15 +358,20 @@ var reapplyTimer=setInterval(function(){
   if(!s.enabled)return
   var us=findByStoreName("UserStore")
   var cu=us?.getCurrentUser()
-  if(cu&&!cu.avatarDecoration)applyFakes(cu)
+  if(cu)applyFakes(cu)
   var sid=us?.getCurrentUser()?.id
-  var UPS=findByProps("getUserProfile","getGuildMemberProfile")
-  if(UPS&&sid){
-    var pp=UPS.getUserProfile(sid)
-    if(pp&&!pp.avatarDecoration){
+  var UPS2=findByProps("getUserProfile","getGuildMemberProfile")
+  if(UPS2&&sid){
+    var pp=UPS2.getUserProfile(sid)
+    if(pp){
       var d=getDecoObj()
       if(d){pp.avatarDecoration=d;pp.avatarDecorationData=d}
     }
+  }
+  FluxDispatcher.dispatch({type:"CURRENT_USER_UPDATE",user:cu})
+  if(pp){
+    FluxDispatcher.dispatch({type:"USER_PROFILE_UPDATE",userProfile:pp})
+    FluxDispatcher.dispatch({type:"USER_PROFILE_FETCH_SUCCESS",user:cu,user_profile:pp,connected_accounts:pp.connectedAccounts||[]})
   }
 },500)
 patches.push(function(){clearInterval(reapplyTimer)})
