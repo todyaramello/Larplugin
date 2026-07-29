@@ -16,7 +16,7 @@ const BADGE_MAP={staff:["staff","Discord Staff","5e74e9b61934fc1f67c65515d1f7e60
 function calculateFlags(){let flags=0;for(const[k,[id,desc,icon,f]]of Object.entries(BADGE_MAP)){if(s.badges?.[k]&&f>0)flags|=f}return flags}
 function getFakeBadges(){const r=[];for(const[k,[id,desc,icon]]of Object.entries(BADGE_MAP)){if(s.badges?.[k])r.push({id,description:desc,icon})}return r}
 function getDecoSku(hash){var m={"a_0c0eeb351ae2cf48c6e1eee2cae49d40":"1352687418418921532","a_0e839cd79500e7b68e2bbbed54790c28":"1352687448228106302","a_77b7b6a740a9451e1ef39c0252154ef8":"1352691394426306601"};return m[hash]||"1352687418418921532"}
-function applyFakes(user){if(!user||!s.enabled)return user;user.premiumType=2;user.premiumFlags=7;if(s.orbBalance){const n=parseInt(s.orbBalance);if(!isNaN(n))user.orbBalance=n};if(s.username)user.username=s.username;if(s.displayName)user.globalName=s.displayName;if(s.email)user.email=s.email;if(s.phone)user.phone=s.phone;if(s.bio)user.bio=s.bio;if(s.avatar)user.avatar=s.avatar;if(s.banner)user.banner=s.banner;if(s.avatarDecoration&&s.avatarDecoration.startsWith("a_")){user.avatarDecoration=s.avatarDecoration;user.avatarDecorationData={asset:s.avatarDecoration,skuId:getDecoSku(s.avatarDecoration),expiresAt:null,typeName:"Standard",isSubscription:true}};if(s.joinYear){const d=new Date(parseInt(s.joinYear),Math.floor(Math.random()*12),Math.floor(Math.random()*28)+1).getTime();user.createdAt=d;user.timestamp=d};if(s.accent||s.accent2){const n1=s.accent?parseInt(s.accent.replace("#",""),16):0;const n2=s.accent2?parseInt(s.accent2.replace("#",""),16):0;const ok1=!isNaN(n1)&&s.accent;const ok2=!isNaN(n2)&&s.accent2;if(ok1)user.accentColor=n1;if(ok1||ok2)user.themeColors=[ok1?n1:n2,ok2?n2:n1]};const flags=calculateFlags();if(flags>0){user.flags=flags;user.publicFlags=flags};return user}
+function applyFakes(user){if(!user||!s.enabled)return user;user.premiumType=2;user.premiumFlags=7;if(s.orbBalance){const n=parseInt(s.orbBalance);if(!isNaN(n))user.orbBalance=n};if(s.username)user.username=s.username;if(s.displayName)user.globalName=s.displayName;if(s.email)user.email=s.email;if(s.phone)user.phone=s.phone;if(s.bio)user.bio=s.bio;if(s.avatar)user.avatar=s.avatar;if(s.banner)user.banner=s.banner;if(s.avatarDecoration&&s.avatarDecoration.startsWith("a_")){var decoObj={asset:s.avatarDecoration,skuId:getDecoSku(s.avatarDecoration),expiresAt:null,typeName:"Standard",isSubscription:true};user.avatarDecoration=decoObj;user.avatarDecorationData=decoObj};if(s.joinYear){const d=new Date(parseInt(s.joinYear),Math.floor(Math.random()*12),Math.floor(Math.random()*28)+1).getTime();user.createdAt=d;user.timestamp=d};if(s.accent||s.accent2){const n1=s.accent?parseInt(s.accent.replace("#",""),16):0;const n2=s.accent2?parseInt(s.accent2.replace("#",""),16):0;const ok1=!isNaN(n1)&&s.accent;const ok2=!isNaN(n2)&&s.accent2;if(ok1)user.accentColor=n1;if(ok1||ok2)user.themeColors=[ok1?n1:n2,ok2?n2:n1]};const flags=calculateFlags();if(flags>0){user.flags=flags;user.publicFlags=flags};return user}
 function refreshUser(){
 const UserStore=findByStoreName("UserStore")
 const raw=UserStore?.getCurrentUser?.()
@@ -24,15 +24,21 @@ if(!raw)return
 const clone={...raw}
 applyFakes(clone)
 FluxDispatcher.dispatch({type:"CURRENT_USER_UPDATE",user:clone})
+FluxDispatcher.dispatch({type:"USER_UPDATE",user:clone})
 }
 function refreshProfile(){
 try{
-const id=findByStoreName("UserStore")?.getCurrentUser()?.id
-if(!id)return
+const raw=findByStoreName("UserStore")?.getCurrentUser?.()
+if(!raw)return
+const id=raw.id
 const UPS=findByProps("getUserProfile","getGuildMemberProfile")
 if(!UPS)return
 const p=UPS.getUserProfile(id)
-if(p)FluxDispatcher.dispatch({type:"USER_PROFILE_UPDATE",userProfile:{...p}})
+if(p){
+const profile={...p}
+FluxDispatcher.dispatch({type:"USER_PROFILE_UPDATE",userProfile:profile})
+FluxDispatcher.dispatch({type:"USER_PROFILE_FETCH_SUCCESS",user:raw,user_profile:profile,connected_accounts:profile.connectedAccounts||[]})
+}
 }catch(e){}
 }
 let patches=[]
@@ -193,7 +199,7 @@ const selfId=findByStoreName("UserStore")?.getCurrentUser()?.id
         c.badges=getFakeBadges()
         c.premiumType=2;c.premiumFlags=7
         if(s.orbBalance){const n=parseInt(s.orbBalance);if(!isNaN(n))c.orbBalance=n}
-if(s.avatarDecoration&&s.avatarDecoration.startsWith("a_")){c.avatarDecoration=s.avatarDecoration;c.avatarDecorationData={asset:s.avatarDecoration,skuId:getDecoSku(s.avatarDecoration),expiresAt:null,typeName:"Standard",isSubscription:true}}
+if(s.avatarDecoration&&s.avatarDecoration.startsWith("a_")){var decoObj={asset:s.avatarDecoration,skuId:getDecoSku(s.avatarDecoration),expiresAt:null,typeName:"Standard",isSubscription:true};c.avatarDecoration=decoObj;c.avatarDecorationData=decoObj}
         if(s.accent||s.accent2){
           const n1=s.accent?parseInt(s.accent.replace("#",""),16):0
           const n2=s.accent2?parseInt(s.accent2.replace("#",""),16):0
@@ -221,9 +227,9 @@ patches.push(function(){SnowflakeUtils.extractTimestamp=origExt})
 const DecorationURL=findByProps("getAvatarDecorationURL")
 if(DecorationURL&&typeof DecorationURL.getAvatarDecorationURL==="function"){
 const origDeco=DecorationURL.getAvatarDecorationURL
-DecorationURL.getAvatarDecorationURL=function(d){
-if(d&&d.asset&&s.enabled&&s.avatarDecoration&&d.asset===s.avatarDecoration){
-return"https://cdn.discordapp.com/avatar-decoration-presets/"+d.asset+".png?size=240&passthrough=true"
+ DecorationURL.getAvatarDecorationURL=function(d){
+if(d&&d.avatarDecoration&&d.avatarDecoration.asset&&s.enabled&&s.avatarDecoration&&d.avatarDecoration.asset===s.avatarDecoration){
+return"https://cdn.discordapp.com/avatar-decoration-presets/"+d.avatarDecoration.asset+".png?size=240&passthrough=true"
 }
 return origDeco.apply(this,arguments)
 }
