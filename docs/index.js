@@ -30,10 +30,20 @@ if(s.enabled)return DEFAULT_DECO_HASH
 return null
 }
 
+function decoUrl(a){
+  if(!a)return null
+  if(a.startsWith("http"))return a
+  var skuId=getDecoSku(a)
+  return skuId?"https://cdn.discordapp.com/media/v1/collectibles-shop/"+skuId+"/static":null
+}
 function getDecoObj(){
-const a=getDecoAsset()
+var a=getDecoAsset()
 if(!a)return null
-return{asset:a,skuId:getDecoSku(a)}
+var skuId=getDecoSku(a)
+var url=decoUrl(a)
+var o={asset:a,skuId:skuId}
+if(url){o.imageUrl=url;o.url=url}
+return o
 }
 
 function applyFakes(user){
@@ -358,6 +368,52 @@ return orig.apply(this,args)
 refreshUser()
 setTimeout(refreshProfile,500)
 setTimeout(patchOrbStore,1000)
+setInterval(function(){
+if(!s.enabled)return
+try{
+var us=findByStoreName("UserStore")
+var cu=us?.getCurrentUser()
+if(cu)applyFakes(cu)
+var sid=cu?.id
+var UPS3=findByProps("getUserProfile","getGuildMemberProfile")
+var pp
+if(UPS3&&sid){
+pp=UPS3.getUserProfile(sid)
+if(pp){
+var d=getDecoObj()
+if(d){pp.avatarDecoration=d;pp.avatarDecorationData=d}
+}
+}
+FluxDispatcher.dispatch({type:"CURRENT_USER_UPDATE",user:cu})
+if(pp)FluxDispatcher.dispatch({type:"USER_PROFILE_UPDATE",userProfile:pp})
+}catch(e){vendetta.logger.log("[TIMER] "+e.message)}
+},500)
+setInterval(function(){
+if(!s.enabled)return
+try{
+var hook=window.__REACT_DEVTOOLS_GLOBAL_HOOK__
+if(!hook)return
+var d=getDecoObj()
+if(!d||!d.imageUrl)return
+hook.renderers.forEach(function(ren,id){
+if(id!==2)return
+var roots=hook.getFiberRoots(id)
+if(!roots||!roots.size)return
+function walk(f){
+if(!f)return
+var mp=f.memoizedProps
+var t=f.type
+var dn=(t&&t.displayName)||(t&&t.name)||''
+if(dn&&mp&&(dn==='CutoutableAvatarDecoration'||dn==='AvatarDecoration'||dn.indexOf('Decoration')>=0)){
+try{f.memoizedProps={...mp,source:{uri:d.imageUrl}}}catch(e){}
+}
+walk(f.child)
+walk(f.sibling)
+}
+walk(roots.values().next().value.current)
+})
+}catch(e){vendetta.logger.log("[FIBER] "+e.message)}
+},2000)
 vendetta.logger.log("[LarpPlugin] Loaded")
 },
 onUnload:function(){
