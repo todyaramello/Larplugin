@@ -216,27 +216,13 @@ onLoad:function(){
 s.enabled=s.enabled===undefined?true:s.enabled
 if(s.avatarDecoration===undefined)s.avatarDecoration=DEFAULT_DECO_HASH
 const UserStore=findByStoreName("UserStore")
-function ensureDeco(user){
-  if(!user||!s.enabled)return user
-  applyFakes(user)
-  Object.defineProperty(user,"avatarDecoration",{
-    get:function(){var d=getDecoObj();return d||undefined},
-    configurable:true,enumerable:true
-  })
-  Object.defineProperty(user,"avatarDecorationData",{
-    get:function(){var d=getDecoObj();return d||undefined},
-    configurable:true,enumerable:true
-  })
-  return user
-}
-patches.push(instead("getCurrentUser",UserStore,function(args,orig){
-var ret=orig.apply(this,args)
-return ensureDeco(ret)
+patches.push(after("getCurrentUser",UserStore,function(args,ret){
+return ret&&s.enabled?applyFakes(ret):ret
 }))
 patches.push(after("getUser",UserStore,function(args,ret){
 if(!ret||!s.enabled)return ret
 const selfId=UserStore.getCurrentUser()?.id
-if(selfId&&args[0]===selfId)return ensureDeco(ret)
+if(selfId&&args[0]===selfId)return applyFakes(ret)
 return ret
 }))
 const UPS=findByProps("getUserProfile","getGuildMemberProfile")
@@ -305,20 +291,17 @@ if(DecorationURL2&&DecorationURL2!==DecorationURL){
     return orig.apply(this,args)
   }))
 }
-function patchDecoHook(m,p){
-  if(!m||!m[p])return
-  patches.push(after(p,m,function(args,ret){
-    if(!s.enabled)return ret
-    var d=getDecoObj()
-    if(d)return d
-    return ret
-  }))
-}
-patchDecoHook(findByProps("useAvatarDecoration"),"useAvatarDecoration")
-patchDecoHook(findByProps("useUserAvatarDecoration"),"useUserAvatarDecoration")
-var DecorationGetter=findByProps("getAvatarDecoration")
+const DecorationGetter=findByProps("getAvatarDecoration")
 if(DecorationGetter&&DecorationGetter.getAvatarDecoration){
   patches.push(instead("getAvatarDecoration",DecorationGetter,function(args,orig){
+    var d=getDecoObj()
+    if(d)return d
+    return orig.apply(this,args)
+  }))
+}
+const DecHookMod=findByProps("useAvatarDecoration","getAvatarDecoration")
+if(DecHookMod){
+  patches.push(instead("useAvatarDecoration",DecHookMod,function(args,orig){
     var d=getDecoObj()
     if(d)return d
     return orig.apply(this,args)
@@ -351,69 +334,9 @@ if(d&&d.skuId===skuId)return{purchasedAt:new Date(),skuId:skuId}
 return orig.apply(this,args)
 }))
 }
-var reapplyTimer=setInterval(function(){
-  if(!s.enabled)return
-  var us=findByStoreName("UserStore")
-  var cu=us?.getCurrentUser()
-  if(cu)applyFakes(cu)
-  var sid=us?.getCurrentUser()?.id
-  var UPS2=findByProps("getUserProfile","getGuildMemberProfile")
-  if(UPS2&&sid){
-    var pp=UPS2.getUserProfile(sid)
-    if(pp){
-      var d=getDecoObj()
-      if(d){pp.avatarDecoration=d;pp.avatarDecorationData=d}
-    }
-  }
-  FluxDispatcher.dispatch({type:"CURRENT_USER_UPDATE",user:cu})
-  if(pp){
-    FluxDispatcher.dispatch({type:"USER_PROFILE_UPDATE",userProfile:pp})
-    FluxDispatcher.dispatch({type:"USER_PROFILE_FETCH_SUCCESS",user:cu,user_profile:pp,connected_accounts:pp.connectedAccounts||[]})
-  }
-},500)
-patches.push(function(){clearInterval(reapplyTimer)})
 refreshUser()
 setTimeout(refreshProfile,500)
 setTimeout(patchOrbStore,1000)
-setInterval(function(){
-if(!s.enabled)return
-try{
-var hook=window.__REACT_DEVTOOLS_GLOBAL_HOOK__;
-if(!hook)return;
-var selfId=findByStoreName("UserStore")?.getCurrentUser()?.id
-if(!selfId)return
-var d=getDecoObj()
-if(!d)return
-var decoUrl="https://cdn.discordapp.com/media/v1/collectibles-shop/"+d.skuId+"/static"
-hook.renderers.forEach(function(ren,id){
-if(id!==2)return;
-var roots=hook.getFiberRoots(id);
-if(!roots||!roots.size)return;
-function walk(f){
-if(!f)return;
-var mp=f.memoizedProps
-var t=f.type
-var dn=(t&&t.displayName)||(t&&t.name)||''
-if(dn&&mp){
-if(dn==='CutoutableAvatarDecoration'||dn==='AvatarDecoration'||dn.indexOf('Decoration')>=0){
-if(!mp.source||mp.source.uri!==decoUrl){
-try{
-f.memoizedProps={...mp,source:{uri:decoUrl}}
-}catch(e){}
-}
-}else if(mp&&mp.avatarDecoration&&!mp.avatarDecoration.asset){
-try{
-f.memoizedProps={...mp,avatarDecoration:d,avatarDecorationData:d}
-}catch(e){}
-}
-}
-walk(f.child)
-walk(f.sibling)
-}
-walk(roots.values().next().value.current)
-})
-}catch(e){vendetta.logger.log("[FIBER] error "+e.message)}
-},2000)
 vendetta.logger.log("[LarpPlugin] Loaded")
 },
 onUnload:function(){
