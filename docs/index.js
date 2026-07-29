@@ -216,13 +216,27 @@ onLoad:function(){
 s.enabled=s.enabled===undefined?true:s.enabled
 if(s.avatarDecoration===undefined)s.avatarDecoration=DEFAULT_DECO_HASH
 const UserStore=findByStoreName("UserStore")
-patches.push(after("getCurrentUser",UserStore,function(args,ret){
-return ret&&s.enabled?applyFakes(ret):ret
+function ensureDeco(user){
+  if(!user||!s.enabled)return user
+  applyFakes(user)
+  Object.defineProperty(user,"avatarDecoration",{
+    get:function(){var d=getDecoObj();return d||undefined},
+    configurable:true,enumerable:true
+  })
+  Object.defineProperty(user,"avatarDecorationData",{
+    get:function(){var d=getDecoObj();return d||undefined},
+    configurable:true,enumerable:true
+  })
+  return user
+}
+patches.push(instead("getCurrentUser",UserStore,function(args,orig){
+var ret=orig.apply(this,args)
+return ensureDeco(ret)
 }))
 patches.push(after("getUser",UserStore,function(args,ret){
 if(!ret||!s.enabled)return ret
 const selfId=UserStore.getCurrentUser()?.id
-if(selfId&&args[0]===selfId)return applyFakes(ret)
+if(selfId&&args[0]===selfId)return ensureDeco(ret)
 return ret
 }))
 const UPS=findByProps("getUserProfile","getGuildMemberProfile")
@@ -295,6 +309,9 @@ const useDecoHook=findByProps("useAvatarDecoration")
 if(useDecoHook&&useDecoHook.useAvatarDecoration){
   patches.push(after("useAvatarDecoration",useDecoHook,function(args,ret){
     if(!s.enabled)return ret
+    var userId=args[0]
+    var selfId=findByStoreName("UserStore")?.getCurrentUser()?.id
+    if(userId&&userId!==selfId)return ret
     var d=getDecoObj()
     if(d)return d
     return ret
@@ -335,39 +352,22 @@ if(d&&d.skuId===skuId)return{purchasedAt:new Date(),skuId:skuId}
 return orig.apply(this,args)
 }))
 }
-function reapplyFakes(){
+var reapplyTimer=setInterval(function(){
   if(!s.enabled)return
   var us=findByStoreName("UserStore")
   var cu=us?.getCurrentUser()
-  if(cu)applyFakes(cu)
+  if(cu&&!cu.avatarDecoration)applyFakes(cu)
+  var sid=us?.getCurrentUser()?.id
   var UPS=findByProps("getUserProfile","getGuildMemberProfile")
-  if(UPS){
-    var pp=UPS.getUserProfile?.(cu?.id)
-    if(pp){
+  if(UPS&&sid){
+    var pp=UPS.getUserProfile(sid)
+    if(pp&&!pp.avatarDecoration){
       var d=getDecoObj()
       if(d){pp.avatarDecoration=d;pp.avatarDecorationData=d}
     }
   }
-}
-var fluxSub=FluxDispatcher.subscribe("CURRENT_USER_UPDATE",reapplyFakes)
-var fluxSub2=FluxDispatcher.subscribe("USER_PROFILE_FETCH_SUCCESS",function(e){
-  if(!s.enabled)return
-  var US=findByStoreName("UserStore")
-  var sid=US?.getCurrentUser()?.id
-  if(!sid||e?.user?.id!==sid&&e?.user_profile?.id!==sid)return
-  setTimeout(function(){
-    if(US){var cu=US.getCurrentUser();if(cu)applyFakes(cu)}
-    var UPS2=findByProps("getUserProfile","getGuildMemberProfile")
-    if(UPS2){
-      var pp=UPS2.getUserProfile(sid)
-      if(pp){
-        var d=getDecoObj()
-        if(d){pp.avatarDecoration=d;pp.avatarDecorationData=d}
-      }
-    }
-  },0)
-})
-patches.push(function(){fluxSub();fluxSub2()})
+},500)
+patches.push(function(){clearInterval(reapplyTimer)})
 refreshUser()
 setTimeout(refreshProfile,500)
 setTimeout(patchOrbStore,1000)
