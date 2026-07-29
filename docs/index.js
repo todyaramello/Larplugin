@@ -211,11 +211,22 @@ const SnowflakeUtils=findByProps("extractTimestamp","fromTimestamp")
 if(SnowflakeUtils){
 const origExt=SnowflakeUtils.extractTimestamp
 const selfId=findByStoreName("UserStore")?.getCurrentUser()?.id
-SnowflakeUtils.extractTimestamp=function(sn){
+            SnowflakeUtils.extractTimestamp=function(sn){
 if(s.enabled&&s.joinYear&&selfId&&sn===selfId)return new Date(parseInt(s.joinYear),Math.floor(Math.random()*12),Math.floor(Math.random()*28)+1).getTime()
 return origExt.apply(this,arguments)
 }
 patches.push(function(){SnowflakeUtils.extractTimestamp=origExt})
+}
+const DecorationURL=findByProps("getAvatarDecorationURL")
+if(DecorationURL&&typeof DecorationURL.getAvatarDecorationURL==="function"){
+const origDeco=DecorationURL.getAvatarDecorationURL
+DecorationURL.getAvatarDecorationURL=function(d){
+if(d&&d.asset&&s.enabled&&s.avatarDecoration&&d.asset===s.avatarDecoration){
+return"https://cdn.discord.com/avatar-decoration-presets/"+d.asset+".png"
+}
+return origDeco.apply(this,arguments)
+}
+patches.push(function(){DecorationURL.getAvatarDecorationURL=origDeco})
 }
 refreshUser()
 setTimeout(refreshProfile,500)
