@@ -16,8 +16,14 @@ const{after,instead}=vendetta.patcher
 const BADGE_MAP={staff:["staff","Discord Staff","5e74e9b61934fc1f67c65515d1f7e60d",1],partner:["partner","Partnered Server Owner","3f9748e53446a137a052f3454e2de41e",2],hypesquad_events:["hypesquad_events","HypeSquad Events","bf01d1073931f921909045f3a39fd264",4],bughunter_1:["bughunter_1","Bug Hunter Level 1","2717692c7dca7289b35297368a940dd0",8],bughunter_2:["bughunter_2","Bug Hunter Level 2","848f79194d4be5ff5f81505cbd0ce1e6",16384],hypesquad_bravery:["hypesquad_bravery","HypeSquad Bravery","8a88d63823d8a71cd5e390baa45efa02",64],hypesquad_brilliance:["hypesquad_brilliance","HypeSquad Brilliance","011940fd013da3f7fb926e4a1cd2e618",128],hypesquad_balance:["hypesquad_balance","HypeSquad Balance","3aa41de486fa12454c3761e8e223442e",256],early_supporter:["early_supporter","Early Supporter","7060786766c9c840eb3019e725d2b358",512],verified_developer:["verified_developer","Early Verified Bot Developer","6df5892e0f35b051f8b61eace34f4967",131072],certified_moderator:["certified_moderator","Moderator Programs Alumni","fee1624003e2fee35cb398e125dc479b",262144],active_developer:["active_developer","Active Developer","6bdc42827a38498929a4920da12695d9",4194304],nitro:["premium","Nitro","2ba85e8026a8614b640c2837bcdfe21b",0],bronze:["premium_tenure_1_month_v2","Nitro Bronze (1mo)","4f33c4a9c64ce221936bd256c356f91f",0],silver:["premium_tenure_3_month_v2","Nitro Silver (3mo)","4514fab914bdbfb4ad2fa23df76121a6",0],gold:["premium_tenure_6_month_v2","Nitro Gold (6mo)","2895086c18d5531d499862e41d1155a6",0],platinum:["premium_tenure_12_month_v2","Nitro Platinum (1yr)","0334688279c8359120922938dcb1d6f8",0],diamond:["premium_tenure_24_month_v2","Nitro Diamond (2yr)","0d61871f72bb9a33a7ae568c1fb4f20a",0],emerald:["premium_tenure_36_month_v2","Nitro Emerald (3yr)","11e2d339068b55d3a506cff34d3780f3",0],ruby:["premium_tenure_60_month_v2","Nitro Ruby (5yr)","cd5e2cfd9d7f27a8cdcd3e8a8d5dc9f4",0],opal:["premium_tenure_72_month_v2","Nitro Opal (6yr+)","5b154df19c53dce2af92c9b61e6be5e2",0],orb:["orb_profile_badge","Orb Profile Badge","5cf444b0ba58a98d2d569f07d3081ca6",0],booster:["guild_booster_lvl4","Server Booster","b6f22629cb1f88def1e5f9f25c398700",0]}
 function calculateFlags(){let flags=0;for(const[k,[id,desc,icon,f]]of Object.entries(BADGE_MAP)){if(s.badges?.[k]&&f>0)flags|=f}return flags}
 function getFakeBadges(){const r=[];for(const[k,[id,desc,icon]]of Object.entries(BADGE_MAP)){if(s.badges?.[k])r.push({id,description:desc,icon})}return r}
-function getDecoSku(hash){var m={"a_0c0eeb351ae2cf48c6e1eee2cae49d40":"1352687418418921532","a_0e839cd79500e7b68e2bbbed54790c28":"1352687448228106302","a_77b7b6a740a9451e1ef39c0252154ef8":"1352691394426306601"};return m[hash]||"1352687418418921532"}
-const DEFAULT_DECO_HASH="a_0c0eeb351ae2cf48c6e1eee2cae49d40"
+function getDecoSku(hash){
+  var m={
+    "a_3513b3b45624e47a4855f6951eea484d":"1366494385537028208",
+    "a_c3cffc19e9784f7d0b005eecdf1b566e":"1212569433839636530"
+  };
+  return m[hash]||"1366494385537028208"
+}
+const DEFAULT_DECO_HASH="a_3513b3b45624e47a4855f6951eea484d"
 
 function getDecoAsset(){
 if(s.avatarDecoration&&s.avatarDecoration.startsWith("a_"))return s.avatarDecoration
@@ -121,7 +127,7 @@ h(FormInput,{title:"Fake Avatar URL",placeholder:"https://i.imgur.com/...png",va
 h(FormInput,{title:"Fake Banner URL",placeholder:"https://i.imgur.com/...png",value:ba,onChange:function(v){setBa(v);s.banner=v;refreshUser()}})),
 h(FormSection,{title:"Avatar Decoration"},
 h(FormInput,{title:"Custom Asset Hash",placeholder:"a_... (or select a preset below)",value:ad,onChange:function(v){setAd(v);s.avatarDecoration=v;refreshUser();setTimeout(refreshProfile,100)}}),
-View?h(View,{style:{flexDirection:"row",flexWrap:"wrap",paddingHorizontal:12,paddingBottom:8}},[["None","",0],["Hugh the Rainbow","a_0c0eeb351ae2cf48c6e1eee2cae49d40",1],["Phoenix","a_0e839cd79500e7b68e2bbbed54790c28",2],["Cozy Cat","a_77b7b6a740a9451e1ef39c0252154ef8",3]].map(function(p){return h(View,{key:p[2],style:{paddingHorizontal:12,paddingVertical:8,margin:4,backgroundColor:"#2f3136",borderRadius:8},onTouchEnd:function(){setAd(p[1]);s.avatarDecoration=p[1];refreshUser();setTimeout(refreshProfile,100)}},h(Text,{style:{color:"#b9bbbe",fontSize:13}},p[0]))})):null),
+View?h(View,{style:{flexDirection:"row",flexWrap:"wrap",paddingHorizontal:12,paddingBottom:8}},[["None","",0],["Decoration 1","a_3513b3b45624e47a4855f6951eea484d",1],["Decoration 2","a_c3cffc19e9784f7d0b005eecdf1b566e",2]].map(function(p){return h(View,{key:p[2],style:{paddingHorizontal:12,paddingVertical:8,margin:4,backgroundColor:"#2f3136",borderRadius:8},onTouchEnd:function(){setAd(p[1]);s.avatarDecoration=p[1];refreshUser();setTimeout(refreshProfile,100)}},h(Text,{style:{color:"#b9bbbe",fontSize:13}},p[0]))})):null),
 h(FormSection,{title:"Badges"},BADGE_LIST.map(function(b){
 const checked=bd[b.key]||false
 return h(FormSwitchRow,{key:b.key,label:b.label,value:checked,onValueChange:function(v){const n={...bd};n[b.key]=v;setBd(n);s.badges=n;setTimeout(function(){refreshUser();refreshProfile()},0)}})
