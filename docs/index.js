@@ -313,14 +313,6 @@ return"https://cdn.discordapp.com/avatar-decoration-presets/"+asset+".png"
 return orig.apply(this,args)
 }))
 }
-const DecHookMod=findByProps("useAvatarDecoration","getAvatarDecoration")
-if(DecHookMod){
-patches.push(instead("useAvatarDecoration",DecHookMod,function(args,orig){
-var d=getDecoObj()
-if(d)return d
-return orig.apply(this,args)
-}))
-}
 const PurchaseStore=findByStoreName("CollectiblesPurchaseStore")
 if(PurchaseStore){
 patches.push(instead("getPurchase",PurchaseStore,function(args,orig){
