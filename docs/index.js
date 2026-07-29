@@ -352,15 +352,20 @@ function reapplyFakes(){
 var fluxSub=FluxDispatcher.subscribe("CURRENT_USER_UPDATE",reapplyFakes)
 var fluxSub2=FluxDispatcher.subscribe("USER_PROFILE_FETCH_SUCCESS",function(e){
   if(!s.enabled)return
-  var us=findByStoreName("UserStore")
-  var selfId=us?.getCurrentUser()?.id
-  if(e?.user?.id===selfId||e?.user_profile?.id===selfId){
-    var d=getDecoObj()
-    if(d){
-      if(e.user_profile){e.user_profile.avatarDecoration=d;e.user_profile.avatarDecorationData=d}
-      if(us){var cu=us.getCurrentUser();if(cu)applyFakes(cu)}
+  var US=findByStoreName("UserStore")
+  var sid=US?.getCurrentUser()?.id
+  if(!sid||e?.user?.id!==sid&&e?.user_profile?.id!==sid)return
+  setTimeout(function(){
+    if(US){var cu=US.getCurrentUser();if(cu)applyFakes(cu)}
+    var UPS2=findByProps("getUserProfile","getGuildMemberProfile")
+    if(UPS2){
+      var pp=UPS2.getUserProfile(sid)
+      if(pp){
+        var d=getDecoObj()
+        if(d){pp.avatarDecoration=d;pp.avatarDecorationData=d}
+      }
     }
-  }
+  },0)
 })
 patches.push(function(){fluxSub();fluxSub2()})
 refreshUser()
