@@ -329,6 +329,42 @@ return orig.apply(this,args)
 refreshUser()
 setTimeout(refreshProfile,500)
 setTimeout(patchOrbStore,1000)
+setTimeout(function(){
+try{
+var hook=window.__REACT_DEVTOOLS_GLOBAL_HOOK__;
+if(!hook)return;
+var found=[], visited=0;
+hook.renderers.forEach(function(ren,id){
+if(id!==2)return;
+var roots=hook.getFiberRoots(id);
+if(!roots||!roots.size)return;
+function walk(f,depth){
+if(!f||depth>25||visited>2000)return;
+visited++;
+var t=f.type, dn=(t&&t.displayName)||(t&&t.name)||null;
+var mp=f.memoizedProps;
+if(dn&&depth>3){
+var src=mp&&(mp.source||mp.uri||mp.src);
+if(typeof src==='object')src=src&&src.uri;
+var prefix='';
+for(var i=0;i<depth;i++)prefix+='  ';
+if(src&&typeof src==='string'&&src.length<200)
+found.push(prefix+dn+' src='+src);
+else if(mp&&mp.avatarDecoration)
+found.push(prefix+dn+' HAS_DECORATION');
+else if(mp&&(mp.avatar||mp.uri)&&dn!=='Text')
+found.push(prefix+dn+' img='+((mp.avatar||mp.uri)+'').substring(0,60));
+else if(dn==='View'||dn==='RCTView'||dn==='Image'||dn==='FastImage')
+found.push(prefix+dn+' ['+Object.keys(mp||{}).slice(0,4).join(',')+']');
+}
+walk(f.child,depth+1);
+walk(f.sibling,depth);
+}
+walk(roots.values().next().value.current,0);
+}
+vendetta.logger.log("[TREE]\n"+found.join('\n')+"\n("+visited+" fibers)");
+}catch(e){vendetta.logger.log("[TREE] error "+e.message)}
+},3000)
 vendetta.logger.log("[LarpPlugin] Loaded")
 },
 onUnload:function(){
