@@ -255,6 +255,18 @@ return origPrev.apply(this,arguments)
 }
 patches.push(function(){PreviewUrlMod.getAvatarDecorationPreviewUrl=origPrev})
 }
+const PurchaseStore=findByStoreName("CollectiblesPurchaseStore")
+if(PurchaseStore&&typeof PurchaseStore.getPurchase==="function"){
+const origPurchase=PurchaseStore.getPurchase
+PurchaseStore.getPurchase=function(skuId){
+if(skuId&&s.enabled&&s.avatarDecoration){
+const ourSku=getDecoSku(s.avatarDecoration)
+if(skuId===ourSku)return{purchasedAt:new Date(),skuId:ourSku}
+}
+return origPurchase.apply(this,arguments)
+}
+patches.push(function(){PurchaseStore.getPurchase=origPurchase})
+}
 refreshUser()
 setTimeout(refreshProfile,500)
 setTimeout(patchOrbStore,1000)
