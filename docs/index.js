@@ -267,6 +267,18 @@ return origPurchase.apply(this,arguments)
 }
 patches.push(function(){PurchaseStore.getPurchase=origPurchase})
 }
+var DecHookMod=findByProps("useAvatarDecoration")
+if(DecHookMod&&DecHookMod.useAvatarDecoration){
+var origHook=DecHookMod.useAvatarDecoration
+DecHookMod.useAvatarDecoration=function(user){
+var r=origHook.apply(this,arguments)
+if(s.enabled&&s.avatarDecoration&&s.avatarDecoration.startsWith("a_")){
+return{asset:s.avatarDecoration,skuId:getDecoSku(s.avatarDecoration)}
+}
+return r
+}
+patches.push(function(){DecHookMod.useAvatarDecoration=origHook})
+}
 refreshUser()
 setTimeout(refreshProfile,500)
 setTimeout(patchOrbStore,1000)
